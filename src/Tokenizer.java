@@ -1,10 +1,12 @@
 import Enums.TokenType;
+import Models.Token;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class Tokenizer {
 
-
+    private static int counter;
     private static Hashtable<String, Integer> states = new Hashtable<>();
     private static Hashtable<Integer, TokenType> acceptStates = new Hashtable<>();
     private static int[][] nextStates;
@@ -204,8 +206,72 @@ public class Tokenizer {
         nextStates[states.get("MultilineCommentMid")]['/'] = states.get("MultilineCommentAccept");
     }
 
+    private static Token getNextToken(String file) {
+        int bestSoFar = -1;
+        TokenType bestToken = null;
 
-    public static void tokenize(String file) {
+        // Start in start state
+        int state = states.get("START");
 
+        int innerCounter = counter - 1;
+
+        while (true) {
+            innerCounter++;
+            state = nextStates[state][file.charAt(innerCounter)];
+
+            if (acceptStates.containsKey(state)) {
+                bestSoFar = innerCounter + 1;
+                bestToken = acceptStates.get(state);
+            }
+
+            // Cannot proceed in dfs
+            if (state < 0) {
+                break;
+            }
+
+            if (innerCounter + 1 == file.length()) {
+                break;
+            }
+        }
+
+        // Couldn't parse
+        if (bestSoFar == -1) {
+            String text;
+
+            // Invalid input encountered
+            if (state == -2) {
+                text = file.substring(counter, innerCounter + 1);
+                counter = innerCounter + 1;
+                return new Token(text, TokenType.InvalidInput);
+            }
+
+            // Stuck in DFS
+            if (state == -1) {
+                text = file.substring(counter, innerCounter + 1);
+                counter = innerCounter + 1;
+                return new Token(text, TokenType.StuckWhileParsing);
+            }
+
+            // This means we are in the middle of the parsing and haven't accepted yet but have reached end of the file
+            if (state > 0) {
+                text = file.substring(counter);
+                counter = file.length();
+                return new Token(text, TokenType.MidParseEOF);
+            }
+            throw new RuntimeException("What the hell is going on?");
+        }
+
+        String text = file.substring(counter, bestSoFar);
+        counter = bestSoFar;
+        return new Token(text, bestToken);
+    }
+
+    public static ArrayList<Token> tokenize(String file) {
+        counter = 0;
+        ArrayList<Token> tokens = new ArrayList<>();
+        while (counter < file.length()) {
+            tokens.add(getNextToken(file));
+        }
+        return tokens;
     }
 }

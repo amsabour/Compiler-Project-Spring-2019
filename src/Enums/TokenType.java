@@ -8,5 +8,7 @@ public enum TokenType {
     COMMENT,
     WHITESPACE,
     EOF,
-    LexicalError
+    InvalidInput,
+    StuckWhileParsing,
+    MidParseEOF,
 }

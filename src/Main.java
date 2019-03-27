@@ -1,34 +1,35 @@
+import Models.Token;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-//        Scanner scanner = new Scanner(System.in);
-//        System.out.println("Please ensure your file is in range. And enter it's path:");
-//        String filePath = scanner.nextLine();
-//
-//        ArrayList<String> lines = readFile(filePath);
-//
-//        if (lines == null) {
-//            System.out.println("Something went wrong. Exiting");
-//            return;
-//        }
-//
-//        String concatenated = concatLines(lines);
-//
-//        System.out.println("Reading File complete");
-//        System.out.println("Tokenizing...");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please ensure your file is in range. And enter it's path:");
+        String filePath = scanner.nextLine();
 
-        for (int i = 0; i < 30; i++) {
-            System.out.print("'");
-            System.out.print((char) (i + '0'));
-            System.out.print("', ");
+        ArrayList<String> lines = readFile(filePath);
 
+        if (lines == null) {
+            System.out.println("Something went wrong. Exiting");
+            return;
         }
 
+        String concatenated = concatLines(lines);
+
+        ArrayList<Token> tokens = Tokenizer.tokenize(concatenated);
+        for (Token token : tokens) {
+            String tokenText = token.toString();
+            if (tokenText.length() > 0)
+                System.out.println(token);
+        }
+//        System.out.println("Reading File complete");
+//        System.out.println("Tokenizing...");
     }
 
     private static ArrayList<String> readFile(String path) {
