@@ -4,18 +4,30 @@ import java.util.Hashtable;
 
 public class Tokenizer {
 
+
     private static Hashtable<String, Integer> states = new Hashtable<>();
     private static Hashtable<Integer, TokenType> acceptStates = new Hashtable<>();
-
     private static int[][] nextStates;
 
     static {
+        init();
+    }
+
+    private static void init() {
+        int counter = 0;
+        String[] keywords = {"if", "else", "void", "int", "while", "break", "continue", "switch", "default", "case", "return"};
+
+        counter = initHashtables(keywords);
+        initNextStates(counter, keywords);
+    }
+
+    private static int initHashtables(String[] keywords) {
         int counter = 0;
 
-        states.put("Start", counter);
+        states.put("START", counter);
         counter++;
 
-        String[] keywords = {"if", "else", "void", "int", "while", "break", "continue", "switch", "default", "case", "return"};
+
         for (String keyword : keywords) {
             for (int i = 0; i < keyword.length(); i++) {
                 if (!states.containsKey(keyword.substring(0, i + 1))) {
@@ -72,109 +84,128 @@ public class Tokenizer {
         states.put("MultilineCommentMid", counter);
         counter++;
 
-        states.put("InlineCommentAccept", counter);
+        states.put("MultilineCommentAccept", counter);
         acceptStates.put(counter, TokenType.COMMENT);
         counter++;
 
+        return counter;
+    }
 
+    private static void initNextStates(int counter, String[] keywords) {
         // 128 is the length of the ascii table. Anything other than that is definitely an invalid char.
         // This will be our table for finding the next state.
         nextStates = new int[counter][128];
+
+        // -2 Means automatic invalid character
         for (int i = 0; i < counter; i++) {
             for (int j = 0; j < 128; j++) {
                 nextStates[i][j] = -2;
             }
         }
 
-        int[] validChars = {';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', ',', '/', 32, 10, 13, 9, 11, 12};
+        // -1 means not defined in table
+        int[] validSymbols = {';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<', '/', 32, 10, 13, 9, 11, 12};
+        int[] validChars = {
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        };
+        int[] validNums = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+        for (int i = 0; i < counter; i++) {
+            for (int valid : validSymbols) {
+                nextStates[i][valid] = -1;
+            }
+            for (int valid : validChars) {
+                nextStates[i][valid] = -1;
+            }
+            for (int valid : validNums) {
+                nextStates[i][valid] = -1;
+            }
+        }
 
         // Fill in table
 
+        // NUM
+        for (int i = 0; i <= 9; i++) {
+            nextStates[states.get("START")]['0' + i] = states.get("NUM");
+            nextStates[states.get("NUM")]['0' + i] = states.get("NUM");
+        }
 
+        // Symbol
+        int[] symbols = {';', ':', ',', '[', ']', '(', ')', '{', '}', '+', '-', '*', '=', '<'};
+        for (int symbol : symbols) {
+            nextStates[states.get("START")][symbol] = states.get("SYMBOL");
+        }
+        nextStates[states.get("SYMBOL")]['='] = states.get("EQUALS");
+
+
+        // IDs and Keywords
+
+        for (int validChar : validChars) {
+            nextStates[states.get("START")][validChar] = states.get("ID");
+        }
+        for (String keyword : keywords) {
+            for (int i = 0; i < keyword.length(); i++) {
+                String key = keyword.substring(0, i + 1);
+                for (int validChar : validChars) {
+                    nextStates[states.get(key)][validChar] = states.get("ID");
+                }
+                for (int validNum : validNums) {
+                    nextStates[states.get(key)][validNum] = states.get("ID");
+                }
+            }
+        }
+
+        for (String keyword : keywords) {
+            nextStates[states.get("START")][keyword.charAt(0)] = states.get(keyword.substring(0, 1));
+            for (int i = 0; i < keyword.length(); i++) {
+                String key = keyword.substring(0, i + 1);
+                if (i + 1 < keyword.length()) {
+                    nextStates[states.get(key)][keyword.charAt(i + 1)] = states.get(keyword.substring(0, i + 2));
+                }
+            }
+        }
+
+        for (int validChar : validChars) {
+            nextStates[states.get("ID")][validChar] = states.get("ID");
+        }
+        for (int validNum : validNums) {
+            nextStates[states.get("ID")][validNum] = states.get("ID");
+        }
+
+
+        // Whitespaces
+        int[] whitespaces = {32, 10, 13, 9, 11, 12};
+        for (int whitespace : whitespaces) {
+            nextStates[states.get("START")][whitespace] = states.get("WHITESPACE");
+        }
+
+
+        // Comments
+        nextStates[states.get("START")]['/'] = states.get("CommentStart");
+
+        nextStates[states.get("CommentStart")]['/'] = states.get("InlineCommentStart");
+        for (int i = 0; i < 128; i++) {
+            nextStates[states.get("InlineCommentStart")][i] = states.get("InlineCommentStart");
+        }
+        nextStates[states.get("InlineCommentStart")]['\n'] = states.get("InlineCommentAccept");
+
+
+        nextStates[states.get("CommentStart")]['*'] = states.get("MultilineCommentStart");
+        for (int i = 0; i < 128; i++) {
+            nextStates[states.get("MultilineCommentStart")][i] = states.get("MultilineCommentStart");
+        }
+        nextStates[states.get("MultilineCommentStart")]['*'] = states.get("MultilineCommentMid");
+
+        for (int i = 0; i < 128; i++) {
+            nextStates[states.get("MultilineCommentMid")][i] = states.get("MultilineCommentStart");
+        }
+        nextStates[states.get("MultilineCommentMid")]['*'] = states.get("MultilineCommentMid");
+        nextStates[states.get("MultilineCommentMid")]['/'] = states.get("MultilineCommentAccept");
     }
+
 
     public static void tokenize(String file) {
 
-    }
-
-
-    private TokenType isTokenValid(String token) {
-        return null;
-    }
-
-    private boolean isWhitespace(String token) {
-        if (token.length() != 1) {
-            return false;
-        }
-        char[] whitespaces = {32, 10, 13, 9, 11, 12};
-        for (char whitespace : whitespaces) {
-            if (token.charAt(0) == whitespace) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isNum(String token) {
-        if (token.length() == 0) {
-            return false;
-        }
-
-        for (int i = 0; i < token.length(); i++) {
-            if (token.charAt(i) - '0' < 0 || token.charAt((i)) - '0' > 9) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean isID(String token) {
-        if (token.length() < 1) {
-            return false;
-        }
-
-        char firstChar = token.charAt(0);
-
-        if ((firstChar < 'a' || firstChar > 'z') && (firstChar < 'A' || firstChar > 'Z')) {
-            return false;
-        }
-
-        for (int i = 2; i < token.length(); i++) {
-            char ithChar = token.charAt(i);
-            if ((ithChar < 'a' || ithChar > 'z') && (ithChar < 'A' || ithChar > 'Z') && (ithChar < '0' || ithChar > '9')) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private boolean isKeyword(String token) {
-        String[] keywords = {"if", "else", "void", "int", "while", "break", "continue", "switch", "default", "case", "return"};
-
-        for (String keyword : keywords) {
-            if (keyword.equals(token))
-                return true;
-        }
-
-        return false;
-    }
-
-    private boolean isSymbol(String token) {
-        String[] symbols = {";", ":", ",", "[", "]", "(", ")", "{", "}", "+", "-", "*", "=", ",", "=="};
-        for (String symbol : symbols) {
-            if (symbol.equals(token)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isEOF(String token) {
-        return token.length() == 0;
-    }
-
-    private boolean isComment(String token) {
-        return false;
     }
 }

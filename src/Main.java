@@ -3,25 +3,31 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Please ensure your file is in range. And enter it's path:");
-        String filePath = scanner.nextLine();
+//        Scanner scanner = new Scanner(System.in);
+//        System.out.println("Please ensure your file is in range. And enter it's path:");
+//        String filePath = scanner.nextLine();
+//
+//        ArrayList<String> lines = readFile(filePath);
+//
+//        if (lines == null) {
+//            System.out.println("Something went wrong. Exiting");
+//            return;
+//        }
+//
+//        String concatenated = concatLines(lines);
+//
+//        System.out.println("Reading File complete");
+//        System.out.println("Tokenizing...");
 
-        ArrayList<String> lines = readFile(filePath);
+        for (int i = 0; i < 30; i++) {
+            System.out.print("'");
+            System.out.print((char) (i + '0'));
+            System.out.print("', ");
 
-        if (lines == null) {
-            System.out.println("Something went wrong. Exiting");
-            return;
         }
-
-        String concatenated = concatLines(lines);
-
-        System.out.println("Reading File complete");
-        System.out.println("Tokenizing...");
 
     }
 
