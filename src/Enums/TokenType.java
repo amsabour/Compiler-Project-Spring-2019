@@ -7,5 +7,6 @@ public enum TokenType {
     SYMBOL,
     COMMENT,
     WHITESPACE,
-    EOF
+    EOF,
+    LexicalError
 }
