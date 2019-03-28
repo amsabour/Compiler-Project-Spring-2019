@@ -5,13 +5,14 @@ import lexanalyzer.models.Token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
+// TODO: 3/28/19 Generally evaluate the idea of constructing objects out of Tokenizer
 public class Tokenizer {
 
-    private static int counter;
-    private static Map<String, Integer> states = new HashMap<>();
-    private static Map<Integer, TokenType> acceptStates = new HashMap<>();
+    private int counter, line;
+    private String file;
+    private static HashMap<String, Integer> states = new HashMap<>();
+    private static HashMap<Integer, TokenType> acceptStates = new HashMap<>();
     private static int[][] nextStates;
 
     static {
@@ -209,7 +210,12 @@ public class Tokenizer {
         nextStates[states.get("MultilineCommentMid")]['/'] = states.get("MultilineCommentAccept");
     }
 
-    private static Token getNextToken(String file) {
+    public Tokenizer(String input) {
+        counter = line = 0;
+        this.file = input;
+    }
+
+    private Token getNextToken() {
         int bestSoFar = -1;
         TokenType bestToken = null;
 
@@ -227,6 +233,11 @@ public class Tokenizer {
                 bestToken = acceptStates.get(state);
             }
 
+            // changing line
+            if (file.charAt(innerCounter) == '\n' && (acceptStates.containsKey(state) ||
+                    state == states.get("MultilineCommentMid") || state == states.get("MultilineCommentStart")))
+                line++;
+
             // Cannot proceed in dfs
             if (state < 0) {
                 break;
@@ -237,16 +248,16 @@ public class Tokenizer {
             }
         }
 
+        // Invalid input encountered
+        if (state == -2) {
+            String text = file.substring(counter, innerCounter + 1);
+            counter = innerCounter + 1;
+            return new Token(text, TokenType.InvalidInput);
+        }
+
         // Couldn't parse
         if (bestSoFar == -1) {
             String text;
-
-            // Invalid input encountered
-            if (state == -2) {
-                text = file.substring(counter, innerCounter + 1);
-                counter = innerCounter + 1;
-                return new Token(text, TokenType.InvalidInput);
-            }
 
             // Stuck in DFS
             if (state == -1) {
@@ -269,12 +280,30 @@ public class Tokenizer {
         return new Token(text, bestToken);
     }
 
-    public static ArrayList<Token> tokenize(String file) {
-        counter = 0;
+    // TODO: 3/28/19 Do we still need the following function?
+    public ArrayList<Token> tokenize() {
+        counter = 0; line = 0;
         ArrayList<Token> tokens = new ArrayList<>();
         while (counter < file.length()) {
-            tokens.add(getNextToken(file));
+            tokens.add(getNextToken());
         }
         return tokens;
+    }
+
+    public ArrayList<Token> tokenizeLine() {
+        ArrayList<Token> tokens = new ArrayList<>();
+        if (counter >= file.length()) {
+            tokens.add(new Token("", TokenType.EOF));
+            return tokens;
+        }
+        int old_line = line;
+        while (old_line == line) {
+            tokens.add(getNextToken());
+        }
+        return tokens;
+    }
+
+    public int getLineNumber() {
+        return line;
     }
 }

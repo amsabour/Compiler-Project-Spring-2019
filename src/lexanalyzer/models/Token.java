@@ -28,15 +28,26 @@ public class Token {
         return this.text;
     }
 
+    public boolean isError() {
+        return type == TokenType.InvalidInput ||
+                type == TokenType.MidParseEOF || type == TokenType.StuckWhileParsing;
+    }
+
+    public boolean isWhite() {
+        return type == null || text == null || type == TokenType.COMMENT ||
+                type == TokenType.EOF || type == TokenType.WHITESPACE;
+    }
+
     @Override
     public String toString() {
-        if (this.type == null || this.text == null) {
-            return "";
-        }
-
-        if (this.type == TokenType.COMMENT || this.type == TokenType.EOF || this.type == TokenType.WHITESPACE) {
-            return "";
-        }
+        // TODO: 3/28/19 considering isError and isWhite methods, do we still need to add the following ifs ??!!
+//        if (this.type == null || this.text == null) {
+//            return "";
+//        }
+//
+//        if (this.type == TokenType.COMMENT || this.type == TokenType.EOF || this.type == TokenType.WHITESPACE) {
+//            return "";
+//        }
 
         return "(" + this.type.toString() + ", " + text + ")";
     }

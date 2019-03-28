@@ -9,9 +9,14 @@ void main(void){
         cd!e = -7;
     }
     else
+    /* multi
+    line comment with action*/ a= 5;
     {
         b = a < cde;
         {cde = @2;
     }}
+    /* highly
+    multi
+    line comment */
     return;
 }
