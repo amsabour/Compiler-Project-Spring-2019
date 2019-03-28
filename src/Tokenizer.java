@@ -2,13 +2,14 @@ import Enums.TokenType;
 import Models.Token;
 
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
-public class Tokenizer {
+class Tokenizer {
 
     private static int counter;
-    private static Hashtable<String, Integer> states = new Hashtable<>();
-    private static Hashtable<Integer, TokenType> acceptStates = new Hashtable<>();
+    private static Map<String, Integer> states = new HashMap<>();
+    private static Map<Integer, TokenType> acceptStates = new HashMap<>();
     private static int[][] nextStates;
 
     static {
@@ -16,7 +17,7 @@ public class Tokenizer {
     }
 
     private static void init() {
-        int counter = 0;
+        int counter;
         String[] keywords = {"if", "else", "void", "int", "while", "break", "continue", "switch", "default", "case", "return"};
 
         counter = initHashtables(keywords);
@@ -266,7 +267,7 @@ public class Tokenizer {
         return new Token(text, bestToken);
     }
 
-    public static ArrayList<Token> tokenize(String file) {
+    static ArrayList<Token> tokenize(String file) {
         counter = 0;
         ArrayList<Token> tokens = new ArrayList<>();
         while (counter < file.length()) {
