@@ -1,4 +1,5 @@
-import Models.Token;
+import lexanalyzer.Tokenizer;
+import lexanalyzer.models.Token;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

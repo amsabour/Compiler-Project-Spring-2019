@@ -1,6 +1,6 @@
-package Models;
+package lexanalyzer.models;
 
-import Enums.TokenType;
+import lexanalyzer.enums.TokenType;
 
 public class Token {
 

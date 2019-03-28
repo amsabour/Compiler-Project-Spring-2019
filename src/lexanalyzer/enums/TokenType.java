@@ -1,4 +1,4 @@
-package Enums;
+package lexanalyzer.enums;
 
 public enum TokenType {
     NUM,

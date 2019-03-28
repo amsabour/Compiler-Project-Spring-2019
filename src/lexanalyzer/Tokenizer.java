@@ -1,11 +1,13 @@
-import Enums.TokenType;
-import Models.Token;
+package lexanalyzer;
+
+import lexanalyzer.enums.TokenType;
+import lexanalyzer.models.Token;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-class Tokenizer {
+public class Tokenizer {
 
     private static int counter;
     private static Map<String, Integer> states = new HashMap<>();
@@ -267,7 +269,7 @@ class Tokenizer {
         return new Token(text, bestToken);
     }
 
-    static ArrayList<Token> tokenize(String file) {
+    public static ArrayList<Token> tokenize(String file) {
         counter = 0;
         ArrayList<Token> tokens = new ArrayList<>();
         while (counter < file.length()) {
