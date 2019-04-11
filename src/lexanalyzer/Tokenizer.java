@@ -231,6 +231,12 @@ public class Tokenizer {
             if (acceptStates.containsKey(state)) {
                 bestSoFar = innerCounter + 1;
                 bestToken = acceptStates.get(state);
+
+                // Comments get accepted at most once so no need to continue from this point
+                if (bestToken == TokenType.COMMENT) {
+                    break;
+                }
+
             }
 
             // changing line
@@ -282,7 +288,8 @@ public class Tokenizer {
 
     // TODO: 3/28/19 Do we still need the following function?
     public ArrayList<Token> tokenize() {
-        counter = 0; line = 0;
+        counter = 0;
+        line = 0;
         ArrayList<Token> tokens = new ArrayList<>();
         while (counter < file.length()) {
             tokens.add(getNextToken());
