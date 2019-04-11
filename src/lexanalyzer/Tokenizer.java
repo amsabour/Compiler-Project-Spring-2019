@@ -231,12 +231,6 @@ public class Tokenizer {
             if (acceptStates.containsKey(state)) {
                 bestSoFar = innerCounter + 1;
                 bestToken = acceptStates.get(state);
-
-                // Comments get accepted at most once so no need to continue from this point
-                if (bestToken == TokenType.COMMENT) {
-                    break;
-                }
-
             }
 
             // changing line
@@ -250,6 +244,11 @@ public class Tokenizer {
             }
 
             if (innerCounter + 1 == file.length()) {
+                break;
+            }
+
+            // Comments get accepted at most once so no need to continue from this point
+            if (bestToken == TokenType.COMMENT) {
                 break;
             }
         }
