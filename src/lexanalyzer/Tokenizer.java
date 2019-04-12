@@ -2,6 +2,7 @@ package lexanalyzer;
 
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
+import lexanalyzer.models.TokenizedLine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -211,7 +212,8 @@ public class Tokenizer {
     }
 
     public Tokenizer(String input) {
-        counter = line = 0;
+        counter = 0;
+        line = 1;
         this.file = input;
     }
 
@@ -288,7 +290,7 @@ public class Tokenizer {
     // TODO: 3/28/19 Do we still need the following function?
     public ArrayList<Token> tokenize() {
         counter = 0;
-        line = 0;
+        line = 1;
         ArrayList<Token> tokens = new ArrayList<>();
         while (counter < file.length()) {
             tokens.add(getNextToken());
@@ -296,20 +298,17 @@ public class Tokenizer {
         return tokens;
     }
 
-    public ArrayList<Token> tokenizeLine() {
+    public TokenizedLine tokenizeLine() {
         ArrayList<Token> tokens = new ArrayList<>();
+        int old_line = line;
         if (counter >= file.length()) {
             tokens.add(new Token("", TokenType.EOF));
-            return tokens;
+            return new TokenizedLine(old_line, tokens);
         }
-        int old_line = line;
         while (old_line == line) {
             tokens.add(getNextToken());
         }
-        return tokens;
+        return new TokenizedLine(old_line, tokens);
     }
 
-    public int getLineNumber() {
-        return line;
-    }
 }

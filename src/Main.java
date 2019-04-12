@@ -1,6 +1,7 @@
 import lexanalyzer.Tokenizer;
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
+import lexanalyzer.models.TokenizedLine;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -87,19 +88,19 @@ public class Main {
             errorFormatter = new Formatter(new FileOutputStream("output/error.txt"));
 
             Tokenizer tokenizer = new Tokenizer(input);
-            ArrayList<Token> tokens = tokenizer.tokenizeLine();
-            while (tokens.get(0).getType() != TokenType.EOF) {
+            TokenizedLine line = tokenizer.tokenizeLine();
+            while (line.getTokens().get(0).getType() != TokenType.EOF) {
                 boolean hasTokens = false, hasErrors = false;
-                for (Token token : tokens) {
+                for (Token token : line.getTokens()) {
                     if (token.isError()) {
                         if (!hasErrors) {
-                            errorFormatter.format(tokenizer.getLineNumber() + ". ");
+                            errorFormatter.format(line.getLineNumber() + ". ");
                             hasErrors = true;
                         }
                         errorFormatter.format(token + " ");
                     } else if (!token.isWhite()) {
                         if (!hasTokens) {
-                            tokenFormatter.format(tokenizer.getLineNumber() + ". ");
+                            tokenFormatter.format(line.getLineNumber() + ". ");
                             hasTokens = true;
                         }
                         tokenFormatter.format(token + " ");
@@ -109,7 +110,7 @@ public class Main {
                     tokenFormatter.format("\n");
                 if (hasErrors)
                     errorFormatter.format("\n");
-                tokens = tokenizer.tokenizeLine();
+                line = tokenizer.tokenizeLine();
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
