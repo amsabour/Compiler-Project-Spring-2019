@@ -49,6 +49,6 @@ public class Token {
 //            return "";
 //        }
 
-        return "(" + this.type.toString() + ", " + text + ")";
+        return "(" + this.type.toString() + ", " + text.replaceAll("\n", "\\\\n") + ")";
     }
 }
