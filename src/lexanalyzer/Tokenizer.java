@@ -2,7 +2,6 @@ package lexanalyzer;
 
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
-import lexanalyzer.models.TokenizedLine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -217,8 +216,14 @@ public class Tokenizer {
         this.file = input;
     }
 
-    private Token getNextToken() {
+    private Token getNextToken_() {
+
+        if (counter >= file.length()) {
+            return new Token("eof", TokenType.EOF, line);
+        }
+
         int bestSoFar = -1;
+        int oldLine = line;
         TokenType bestToken = null;
 
         // Start in start state
@@ -259,7 +264,7 @@ public class Tokenizer {
         if (state == -2) {
             String text = file.substring(counter, innerCounter + 1);
             counter = innerCounter + 1;
-            return new Token(text, TokenType.InvalidInput);
+            return new Token(text, TokenType.InvalidInput, oldLine);
         }
 
         // Couldn't parse
@@ -270,45 +275,51 @@ public class Tokenizer {
             if (state == -1) {
                 text = file.substring(counter, innerCounter + 1);
                 counter = innerCounter + 1;
-                return new Token(text, TokenType.StuckWhileParsing);
+                return new Token(text, TokenType.StuckWhileParsing, oldLine);
             }
 
             // This means we are in the middle of the parsing and haven't accepted yet but have reached end of the file
             if (state > 0) {
                 text = file.substring(counter);
                 counter = file.length();
-                return new Token(text, TokenType.MidParseEOF);
+                return new Token(text, TokenType.MidParseEOF, oldLine);
             }
             throw new RuntimeException("What the hell is going on?");
         }
 
         String text = file.substring(counter, bestSoFar);
         counter = bestSoFar;
-        return new Token(text, bestToken);
+        return new Token(text, bestToken, oldLine);
     }
 
-    // TODO: 3/28/19 Do we still need the following function?
-    public ArrayList<Token> tokenize() {
-        counter = 0;
-        line = 1;
-        ArrayList<Token> tokens = new ArrayList<>();
-        while (counter < file.length()) {
-            tokens.add(getNextToken());
+
+    // This method extracts all Error and whitespace tokens and only returns valid ones
+    public Token getNextToken() {
+        while (true) {
+            Token token = getNextToken_();
+            // Returned token is an error token
+            if (token.isError() || token.isWhite()) {
+                // Handle write to files
+                // TODO Moosio add this please
+            } else {
+                return token;
+            }
         }
-        return tokens;
     }
 
-    public TokenizedLine tokenizeLine() {
-        ArrayList<Token> tokens = new ArrayList<>();
-        int old_line = line;
-        if (counter >= file.length()) {
-            tokens.add(new Token("", TokenType.EOF));
-            return new TokenizedLine(old_line, tokens);
+    public ArrayList<Token> tokenizeLine() {
+        int oldLine = line;
+        ArrayList<Token> result = new ArrayList<>();
+
+        while (line == oldLine) {
+            Token newToken = getNextToken_();
+            result.add(newToken);
+            if (newToken.getType() == TokenType.EOF) {
+                break;
+            }
         }
-        while (old_line == line) {
-            tokens.add(getNextToken());
-        }
-        return new TokenizedLine(old_line, tokens);
+
+        return result;
     }
 
 }

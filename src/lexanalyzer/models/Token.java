@@ -6,10 +6,12 @@ public class Token {
 
     private TokenType type;
     private String text;
+    private int lineNumber;
 
-    public Token(String text, TokenType type) {
+    public Token(String text, TokenType type, int lineNumber) {
         this.text = text;
         this.type = type;
+        this.lineNumber = lineNumber;
     }
 
     public void setType(TokenType type) {
@@ -20,12 +22,20 @@ public class Token {
         this.text = text;
     }
 
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
     public TokenType getType() {
         return this.type;
     }
 
     public String getText() {
         return this.text;
+    }
+
+    public int getLineNumber() {
+        return this.lineNumber;
     }
 
     public boolean isError() {
@@ -35,7 +45,14 @@ public class Token {
 
     public boolean isWhite() {
         return type == null || text == null || type == TokenType.COMMENT ||
-                type == TokenType.EOF || type == TokenType.WHITESPACE;
+                type == TokenType.WHITESPACE;
+
+        // TODO Is this correct? (This part has been commented out
+        // type == TokenType.EOF ;
+    }
+
+    public boolean isEOF() {
+        return type == TokenType.EOF;
     }
 
     @Override

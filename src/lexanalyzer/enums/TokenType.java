@@ -5,10 +5,25 @@ public enum TokenType {
     ID,
     KEYWORD,
     SYMBOL,
+    EOF,
+
     COMMENT,
     WHITESPACE,
-    EOF,
+
+    // Error Tokens
     InvalidInput,
     StuckWhileParsing,
-    MidParseEOF,
+    MidParseEOF;
+
+
+    public static boolean isError(TokenType type) {
+        switch (type) {
+            case InvalidInput:
+            case StuckWhileParsing:
+            case MidParseEOF:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

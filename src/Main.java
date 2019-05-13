@@ -1,7 +1,7 @@
 import lexanalyzer.Tokenizer;
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
-import lexanalyzer.models.TokenizedLine;
+import parser.models.Parser;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -27,7 +27,12 @@ public class Main {
 
         System.out.println("Writing output files to output/ directory...\n" +
                 "In case of failure please make sure I have the permission to make a directory");
-        analyze(concatenated);
+//        analyze(concatenated);
+
+        Tokenizer tokenizer = new Tokenizer(concatenated);
+        Parser parser = new Parser(tokenizer);
+        parser.startParse();
+
         System.out.println("Done");
 
     }
@@ -88,19 +93,20 @@ public class Main {
             errorFormatter = new Formatter(new FileOutputStream("output/error.txt"));
 
             Tokenizer tokenizer = new Tokenizer(input);
-            TokenizedLine line = tokenizer.tokenizeLine();
-            while (line.getTokens().get(0).getType() != TokenType.EOF) {
+            ArrayList<Token> line = tokenizer.tokenizeLine();
+            int lineNumber = line.get(0).getLineNumber();
+            while (line.get(0).getType() != TokenType.EOF) {
                 boolean hasTokens = false, hasErrors = false;
-                for (Token token : line.getTokens()) {
+                for (Token token : line) {
                     if (token.isError()) {
                         if (!hasErrors) {
-                            errorFormatter.format(line.getLineNumber() + ". ");
+                            errorFormatter.format(lineNumber + ". ");
                             hasErrors = true;
                         }
                         errorFormatter.format(token + " ");
-                    } else if (!token.isWhite()) {
+                    } else if (!(token.isWhite() || token.isEOF())) {
                         if (!hasTokens) {
-                            tokenFormatter.format(line.getLineNumber() + ". ");
+                            tokenFormatter.format(lineNumber + ". ");
                             hasTokens = true;
                         }
                         tokenFormatter.format(token + " ");
@@ -111,6 +117,7 @@ public class Main {
                 if (hasErrors)
                     errorFormatter.format("\n");
                 line = tokenizer.tokenizeLine();
+                lineNumber = line.get(0).getLineNumber();
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

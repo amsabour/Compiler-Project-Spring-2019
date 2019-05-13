@@ -1,0 +1,88 @@
+Program -> Declaration-list EOF 
+Declaration-list -> Declaration Declaration-list 
+Declaration-list -> ε 
+Declaration -> Type-specifier id Declaration-2 
+Declaration-2 -> ; 
+Declaration-2 -> [ num ] ; 
+Declaration-2 -> ( Params ) Compound-stmt  
+Type-specifier -> int 
+Type-specifier -> void  
+Params -> int id Param-2 Params-list-2 
+Params -> void Params-2 
+Params-2 -> id Param-2 Params-list-2 
+Params-2 -> ε 
+Params-list -> Param Params-list-2 
+Params-list-2 ->comma Params-list 
+Params-list-2 -> ε 
+Param -> Type-specifier id Param-2 
+Param-2 -> [ ] 
+Param-2 -> ε 
+Compound-stmt -> { Declaration-list Statement-list } 
+Statement-list -> Statement Statement-list 
+Statement-list  -> ε
+Statement -> Expression-stmt 
+Statement -> Compound-stmt 
+Statement -> Selection-stmt 
+Statement -> Iteration-stmt 
+Statement -> Return-stmt 
+Statement -> Switch-stmt 
+Expression-stmt -> Expression ; 
+Expression-stmt -> continue ; 
+Expression-stmt -> break ; 
+Expression-stmt -> ;  
+Selection-stmt -> if ( Expression ) Statement else Statement  
+Iteration-stmt -> while ( Expression ) Statement 
+Return-stmt -> return Return-stmt-2 
+Return-stmt-2 -> ; 
+Return-stmt-2 -> Expression ; 
+Switch-stmt -> switch ( Expression ) { Case-stmts Default-stmt } 
+Case-stmts -> Case-stmt Case-stmts 
+Case-stmts -> ε 
+Case-stmt -> case num : Statement-list  
+Default-stmt -> default : Statement-list 
+Default-stmt -> ε 
+Var -> id Var-2 
+Var-2 -> [ Expression ] 
+Var-2 -> ε 
+Simple-expression -> Additive-expression Simple-expression-2 
+Simple-expression-2 -> Relop Additive-expression 
+Simple-expression-2 -> ε 
+Relop -> < 
+Relop -> == 
+Additive-expression -> Term Additive-expression-2 
+Additive-expression-2 -> Addop Additive-expression 
+Additive-expression-2 -> ε 
+Addop -> + 
+Addop -> - 
+Term -> Signed-Factor Term-2 
+Term-2 -> ε 
+Term-2 -> * Term 
+Signed-Factor -> Factor 
+Signed-Factor -> + Factor 
+Signed-Factor -> - Factor 
+Factor -> ( Expression ) 
+Factor -> num 
+Factor -> id Factor-2 
+Factor-2 -> [ Expression ] 
+Factor-2 -> ( Args ) 
+Factor-2 -> ε 
+Args -> Arg-list 
+Args -> ε 
+Arg-list -> Expression Arg-list-2 
+Arg-list-2 -> comma Arg-list 
+Arg-list-2 -> ε 
+Expression -> + Factor Term-2 Additive-expression-2 Simple-expression-2 
+Expression -> - Factor Term-2 Additive-expression-2 Simple-expression-2  
+Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2  
+Expression -> num Term-2 Additive-expression-2 Simple-expression-2  
+Expression -> id Expression-2  
+Expression-2 -> [ Expression ] Expression-3 
+Expression-2 -> Expression-3 
+Expression-2 -> ( Args ) Term-2 Additive-expression-2 Simple-expression-2 
+Expression-3 -> * Term Additive-expression-2 Simple-expression-2 
+Expression-3 -> < Additive-expression 
+Expression-3 -> Addop Additive-expression Simple-expression-2 
+Expression-3 -> = Expression-4 
+Expression-3 -> ε 
+Expression-4 -> Expression 
+Expression-4 -> = Additive-expression 
