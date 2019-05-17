@@ -1,5 +1,6 @@
 package lexanalyzer;
 
+import io.OutputHandler;
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
 
@@ -298,10 +299,9 @@ public class Tokenizer {
         while (true) {
             Token token = getNextToken_();
             // Returned token is an error token
-            if (token.isError() || token.isWhite()) {
-                // Handle write to files
-                // TODO Moosio add this please
-            } else {
+            if (token.isError()) {
+                OutputHandler.getInstance().printError(token.getLineNumber() + ": Lexical Error! " + token.getType());
+            } else if (!token.isWhite()) {
                 return token;
             }
         }

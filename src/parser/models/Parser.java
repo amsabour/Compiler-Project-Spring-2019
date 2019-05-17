@@ -1,5 +1,6 @@
 package parser.models;
 
+import io.OutputHandler;
 import lexanalyzer.Tokenizer;
 import lexanalyzer.models.Token;
 
@@ -20,10 +21,8 @@ public class Parser {
 
     private static HashMap<String, List<Rule>> rules = new HashMap<>();
 
-
     // All of this has been obtained from using the grammar on this website : https://mikedevice.github.io/first-follow/
     // Grammar used will be included
-
 
     // Initialize terminals and non-terminals
     private static void loadSymbols(String filePath, Set<String> symbolSet) {
@@ -137,11 +136,7 @@ public class Parser {
 
     private void parse(String state) {
         depth++;
-
-        for (int i = 0; i < depth; i++) {
-            System.out.print("|\t");
-        }
-        System.out.println(state);
+        OutputHandler.getInstance().printParser(state, depth);
 
         if (state.equals("eps")) {
             depth--;
@@ -177,31 +172,61 @@ public class Parser {
                 }
             }
 
+            // TODO: 5/17/19 this if is redundant
             if (goalRule != null) {
                 for (String component : goalRule.getComponents()) {
-                    parse(component);
+
+                    if (terminals.contains(component)) {
+                        if (isTokenMatch(component) || component.equals("eps")) {
+                            parse(component);
+                        } else {
+                            if (component.equals("eof"))
+                                OutputHandler.getInstance().printError(token.getLineNumber() +
+                                        ": Syntax Error! Malformed Inout");
+                            else
+                                OutputHandler.getInstance().printError(token.getLineNumber() +
+                                        ": Syntax Error! Missing" + component);
+                        }
+                    }
+
+
+                    if (nonTerminals.contains(component)) {
+                        Set<String> first = firsts.get(component), follow = follows.get(component);
+                        while (!first.contains(getTokenString()) && !follow.contains(getTokenString())) {
+                            OutputHandler.getInstance().printError(token.getLineNumber() +
+                                    ": Syntax Error! Unexpected " + token.getType());
+                            if (!token.isEOF())
+                                token = tokenizer.getNextToken();
+                            else {
+                                return;
+                            }
+                        }
+                        if (!first.contains(getTokenString()) && !first.contains("eps")) {
+                            OutputHandler.getInstance().printError(token.getLineNumber() +
+                                    ": Syntax Error! Missing " + component);
+                        } else {
+                            parse(component);
+                        }
+                    }
                 }
             } else {
                 // None of the rules match
-                System.err.println("No rules match!");
+                System.err.println("Didn't expect this!");
             }
         }
 
         depth--;
     }
 
-
     private boolean isRuleValid(String state, Rule rule) {
         String tokenString = getTokenString();
-        String firstComponent = rule.getFirstComponent();
 
-        Set<String> first = firsts.get(firstComponent);
+        Set<String> first = rule.getFirst();
 
         boolean isInFirst = first.contains(tokenString);
-        boolean isInFollow = firsts.get(state).contains("eps") && follows.get(state).contains(tokenString) && rule.isNullable();
+        boolean isInFollow = first.contains("eps") && follows.get(state).contains(tokenString);
 
-        return isInFirst ||
-                isInFollow;
+        return isInFirst || isInFollow;
     }
 
     private String getTokenString() {
@@ -232,22 +257,25 @@ public class Parser {
             this.comps = comps;
         }
 
-        String getFirstComponent() {
-            return comps.get(0);
-        }
-
         List<String> getComponents() {
             return this.comps;
         }
 
-        boolean isNullable() {
-            boolean result = true;
-            for (String component : comps) {
-                result = firsts.get(component).contains("eps");
-                if (!result)
+        Set<String> getFirst() {
+            Set<String> first = new HashSet<>();
+            boolean isNullable = true;
+            for (String compoennt : comps) {
+                first.addAll(firsts.get(compoennt));
+                if (first.contains("eps"))
+                    first.remove("eps");
+                else {
+                    isNullable = false;
                     break;
+                }
             }
-            return result;
+            if (isNullable)
+                first.add("eps");
+            return first;
         }
     }
 }

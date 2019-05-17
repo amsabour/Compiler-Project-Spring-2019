@@ -10,9 +10,9 @@ Params-list-2: , eps
 Param: int void
 Param-2: [ eps
 
-Compound-stmt: [
-Statement-list: eps [ continue break ; if while return switch + - ( num id
-Statement: [ continue break ; if while return switch + - ( num id
+Compound-stmt: {
+Statement-list: eps { continue break ; if while return switch + - ( num id
+Statement: { continue break ; if while return switch + - ( num id
 Expression-stmt: continue break ; + - ( num id
 Selection-stmt: if
 Iteration-stmt: while

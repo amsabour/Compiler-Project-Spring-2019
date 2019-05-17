@@ -1,3 +1,4 @@
+import io.OutputHandler;
 import lexanalyzer.Tokenizer;
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
@@ -32,7 +33,7 @@ public class Main {
         Tokenizer tokenizer = new Tokenizer(concatenated);
         Parser parser = new Parser(tokenizer);
         parser.startParse();
-
+        OutputHandler.getInstance().close();
         System.out.println("Done");
 
     }

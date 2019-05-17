@@ -12,14 +12,14 @@ Params -> void Params-2
 Params-2 -> id Param-2 Params-list-2
 Params-2 -> eps
 Params-list -> Param Params-list-2
-Params-list-2 ->comma Params-list
+Params-list-2 -> , Params-list
 Params-list-2 -> eps
 Param -> Type-specifier id Param-2
 Param-2 -> [ ]
 Param-2 -> eps
 Compound-stmt -> { Declaration-list Statement-list }
 Statement-list -> Statement Statement-list
-Statement-list  -> eps
+Statement-list -> eps
 Statement -> Expression-stmt
 Statement -> Compound-stmt
 Statement -> Selection-stmt
@@ -69,7 +69,7 @@ Factor-2 -> eps
 Args -> Arg-list
 Args -> eps
 Arg-list -> Expression Arg-list-2
-Arg-list-2 -> comma Arg-list
+Arg-list-2 -> , Arg-list
 Arg-list-2 -> eps
 Expression -> + Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> - Factor Term-2 Additive-expression-2 Simple-expression-2
