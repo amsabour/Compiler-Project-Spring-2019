@@ -1,0 +1,51 @@
+Program: $
+Declaration-list: eof { continue break ; if while return switch + - ( num id }
+Declaration: int void eof { continue break ; if while return switch + - ( num id }
+Declaration-2: int void eof { continue break ; if while return switch + - ( num id }
+Type-specifier: id
+Params: )
+Params-2: )
+Params-list: )
+Params-list-2: )
+Param: , )
+Param-2: , )
+
+
+Compound-stmt: int void eof { continue break ; if while return switch + - ( num id } else case default
+Statement-list: } case default
+
+Statement: { continue break ; if while return switch + - ( num id } else case default
+Expression-stmt: { continue break ; if while return switch + - ( num id } else case default
+Selection-stmt: { continue break ; if while return switch + - ( num id } else case default
+Iteration-stmt: { continue break ; if while return switch + - ( num id } else case default
+Return-stmt: { continue break ; if while return switch + - ( num id } else case default
+Return-stmt-2: { continue break ; if while return switch + - ( num id } else case default
+Switch-stmt: { continue break ; if while return switch + - ( num id } else case default
+
+
+Case-stmts: default }
+Case-stmt: case default }
+Default-stmt: }
+Var:
+Var-2:
+Simple-expression:
+
+Simple-expression-2: ; ) ] ,
+Relop: + - ( num id
+Additive-expression: < == ; ) ] ,
+Additive-expression-2: < == ; ) ] ,
+
+Addop: + - ( num id
+
+Term: + - < == ; ) ] ,
+Term-2: + - < == ; ) ] ,
+Signed-Factor: * + - < == ; ) ] ,
+Factor: * + - < == ; ) ] ,
+Factor-2: * + - < == ; ) ] ,
+Args: )
+Arg-list: )
+Arg-list-2: )
+Expression: ; ) ] ,
+Expression-2: ; ) ] ,
+Expression-3: ; ) ] ,
+Expression-4: ; ) ] ,

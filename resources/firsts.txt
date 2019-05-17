@@ -1,0 +1,49 @@
+Program: eof int void
+Declaration-list: eps int void
+Declaration: int void
+Declaration-2: ; [ (
+Type-specifier: int void
+Params: int void
+Params-2: id eps
+Params-list: int void
+Params-list-2: , eps
+Param: int void
+Param-2: [ eps
+
+Compound-stmt: [
+Statement-list: eps [ continue break ; if while return switch + - ( num id
+Statement: [ continue break ; if while return switch + - ( num id
+Expression-stmt: continue break ; + - ( num id
+Selection-stmt: if
+Iteration-stmt: while
+Return-stmt: return
+Return-stmt-2: ; + - ( num id
+Switch-stmt: switch
+Case-stmts: eps case
+Case-stmt: case
+Default-stmt: default eps
+Var: id
+
+Var-2: [ eps
+Simple-expression: + - ( num id
+Simple-expression-2: eps < ==
+Relop: < ==
+
+Additive-expression: + - ( num id
+Additive-expression-2: eps + -
+Addop: + -
+Term: + - ( num id
+Term-2: eps *
+
+Signed-Factor: + - ( num id
+Factor: ( num id
+Factor-2: [ ( eps
+
+Args: eps + - ( num id
+Arg-list: + - ( num id
+Arg-list-2: , eps
+
+Expression: + - ( num id
+Expression-2: [ ( * < + - = eps
+Expression-3: * < + - = eps
+Expression-4: + - ( num id =
