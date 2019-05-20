@@ -1,0 +1,42 @@
+Program: Program
+Declaration-list: A list of declarations
+Declaration: Declaration
+Declaration-2: End of a declaration (;, []; or (Params) {})
+Type-specifier: Type specifier (int or void)
+Params: List of parameters
+Params-2: List of parameters after void
+Params-list: Rest of parameters
+Params-list-2: A list of parameters with a beginning ,
+Param: A parameter
+Param-2: []
+Compound-stmt: { [A list of statements] }
+Statement-list: A list of statements
+Statement: Statement
+Expression-stmt: An arithmetic, continue or break statement
+Selection-stmt: if (condition) Statement else Statement
+Iteration-stmt: while (condition) Statement
+Return-stmt: return (a value-optional);
+Return-stmt-2: (an optional arithmetic expression);
+Switch-stmt: switch case statement
+Case-stmts: case (condition): statement;
+Case-stmt: case (condition)
+Default-stmt: default: (a list of statements)
+Var: variable
+Var-2: [arithmetic expression]
+Simple-expression: A simple arithmetic expression
+Simple-expression-2: Rest of a simple arithmetic expression
+Relop: Relational Operator (< or ==)
+Additive-expression: An addition or subtraction
+Additive-expression-2: Rest of an additive expression
+Addop: + or -
+Term: A signed mathematical term
+Term-2: Rest of a mathematical term
+Signed-Factor: A signed factor of a term
+Factor: A mathematical factor such as ((...), number, variable-name, result of function)
+Factor-2: Rest of a factor
+Args: A list of arguments
+Arg-list: A list of arguments
+Arg-list-2: A list of arguments with a beginning ,
+Expression: An arithmetic expression
+Expression-2: Rest of an arithmetic expression
+Expression-3: Rest of an arithmetic expression

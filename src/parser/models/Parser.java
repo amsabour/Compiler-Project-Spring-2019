@@ -186,12 +186,11 @@ public class Parser {
                             parse(component);
                         } else {
                             if (component.equals("eof")) {
-                                OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Malformed Input");
+                                OutputHandler.getInstance().printEOFError("Malformed Input", token.getLineNumber());
                                 throw new EOFException();
                             } else
-                                OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Missing " + component);
+                                OutputHandler.getInstance().printTerminalError(component, "Missing",
+                                        token.getLineNumber());
                         }
                     }
 
@@ -199,9 +198,8 @@ public class Parser {
                     if (nonTerminals.contains(component)) {
                         Set<String> first = firsts.get(component), follow = follows.get(component);
                         while (!first.contains(getTokenString()) && !follow.contains(getTokenString())) {
-                            OutputHandler.getInstance().printError(token.getLineNumber() +
-                                    ": Syntax Error! Unexpected " + token.getType());
-
+                            OutputHandler.getInstance().printTerminalError(getTokenString(), "Unexpected",
+                                    token.getLineNumber());
                             if (token.getType() == TokenType.EOF)
                                 throw new EOFException();
 
@@ -214,12 +212,9 @@ public class Parser {
                         }
                         if (!first.contains(getTokenString()) && !first.contains("eps")) {
                             if (token.getType() != TokenType.EOF)
-                                OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Missing " + component);
-                            else
-                            {
-                                OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Unexpected " + token.getType());
+                                OutputHandler.getInstance().printNonTerminalError(component, token.getLineNumber());
+                            else {
+                                OutputHandler.getInstance().printEOFError("Unexpected EndOfFile", token.getLineNumber());
                                 throw new EOFException();
                             }
                         } else {

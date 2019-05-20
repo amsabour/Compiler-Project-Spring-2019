@@ -300,7 +300,7 @@ public class Tokenizer {
             Token token = getNextToken_();
             // Returned token is an error token
             if (token.isError()) {
-                OutputHandler.getInstance().printError(token.getLineNumber() + ": Lexical Error! " + token.getType());
+                OutputHandler.getInstance().printLexicalError(token.getType().toString(), token.getLineNumber());
             } else if (!token.isWhite()) {
                 return token;
             }
