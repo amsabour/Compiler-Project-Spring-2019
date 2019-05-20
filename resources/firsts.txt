@@ -44,6 +44,5 @@ Arg-list: + - ( num id
 Arg-list-2: , eps
 
 Expression: + - ( num id
-Expression-2: [ ( * < + - = eps
-Expression-3: * < + - = eps
-Expression-4: + - ( num id =
+Expression-2: [ ( * < + - = == eps
+Expression-3: * < + - = == eps

@@ -80,9 +80,7 @@ Expression-2 -> [ Expression ] Expression-3
 Expression-2 -> Expression-3
 Expression-2 -> ( Args ) Term-2 Additive-expression-2 Simple-expression-2
 Expression-3 -> * Term Additive-expression-2 Simple-expression-2
-Expression-3 -> < Additive-expression
 Expression-3 -> Addop Additive-expression Simple-expression-2
-Expression-3 -> = Expression-4
+Expression-3 -> Relop Additive-expression
+Expression-3 -> = Expression
 Expression-3 -> eps
-Expression-4 -> Expression
-Expression-4 -> = Additive-expression

@@ -2,7 +2,9 @@ package parser.models;
 
 import io.OutputHandler;
 import lexanalyzer.Tokenizer;
+import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
+import parser.exceptions.EOFException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -131,10 +133,13 @@ public class Parser {
 
 
     public void startParse() {
-        parse("Program");
+        try {
+            parse("Program");
+        } catch (EOFException ignored) {
+        }
     }
 
-    private void parse(String state) {
+    private void parse(String state) throws EOFException {
         depth++;
         OutputHandler.getInstance().printParser(state, depth);
 
@@ -180,12 +185,13 @@ public class Parser {
                         if (isTokenMatch(component) || component.equals("eps")) {
                             parse(component);
                         } else {
-                            if (component.equals("eof"))
+                            if (component.equals("eof")) {
                                 OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Malformed Inout");
-                            else
+                                        ": Syntax Error! Malformed Input");
+                                throw new EOFException();
+                            } else
                                 OutputHandler.getInstance().printError(token.getLineNumber() +
-                                        ": Syntax Error! Missing" + component);
+                                        ": Syntax Error! Missing " + component);
                         }
                     }
 
@@ -195,15 +201,27 @@ public class Parser {
                         while (!first.contains(getTokenString()) && !follow.contains(getTokenString())) {
                             OutputHandler.getInstance().printError(token.getLineNumber() +
                                     ": Syntax Error! Unexpected " + token.getType());
+
+                            if (token.getType() == TokenType.EOF)
+                                throw new EOFException();
+
                             if (!token.isEOF())
                                 token = tokenizer.getNextToken();
                             else {
+                                depth--;
                                 return;
                             }
                         }
                         if (!first.contains(getTokenString()) && !first.contains("eps")) {
-                            OutputHandler.getInstance().printError(token.getLineNumber() +
-                                    ": Syntax Error! Missing " + component);
+                            if (token.getType() != TokenType.EOF)
+                                OutputHandler.getInstance().printError(token.getLineNumber() +
+                                        ": Syntax Error! Missing " + component);
+                            else
+                            {
+                                OutputHandler.getInstance().printError(token.getLineNumber() +
+                                        ": Syntax Error! Unexpected " + token.getType());
+                                throw new EOFException();
+                            }
                         } else {
                             parse(component);
                         }
