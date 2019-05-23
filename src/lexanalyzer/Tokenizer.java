@@ -239,6 +239,10 @@ public class Tokenizer {
             if (acceptStates.containsKey(state)) {
                 bestSoFar = innerCounter + 1;
                 bestToken = acceptStates.get(state);
+
+                // Quick end for 1 character symbols (everything except =)
+                if (bestToken == TokenType.SYMBOL && file.substring(counter, bestSoFar).length() == 1 && !file.substring(counter, bestSoFar).equals("="))
+                    break;
             }
 
             // changing line
@@ -300,7 +304,7 @@ public class Tokenizer {
             Token token = getNextToken_();
             // Returned token is an error token
             if (token.isError()) {
-                OutputHandler.getInstance().printLexicalError(token.getType().toString(), token.getLineNumber());
+                OutputHandler.getInstance().printLexicalError(token.getType().toString() + " " + token.getText().trim(), token.getLineNumber());
             } else if (!token.isWhite()) {
                 return token;
             }
