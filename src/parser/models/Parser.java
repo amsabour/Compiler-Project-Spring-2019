@@ -136,99 +136,115 @@ public class Parser {
         try {
             parse("Program");
         } catch (EOFException ignored) {
+            // Encountered EOFException. Stopping parse.
         }
     }
 
     private void parse(String state) throws EOFException {
-        depth++;
-        OutputHandler.getInstance().printParser(state, depth);
+        onStateEnter(state);
 
         if (state.equals("eps")) {
-            depth--;
+            onStateExit(state);
             return;
         }
 
-
         if (!terminals.contains(state) && !nonTerminals.contains(state)) {
             System.err.println("WHAT THE FUCK???");
-            depth--;
+            onStateExit(state);
             return;
         }
 
         // Parse one terminal
         if (terminals.contains(state)) {
-            if (isTokenMatch(state)) {
-
-                // This token has been parsed
-                if (!token.isEOF())
-                    token = tokenizer.getNextToken();
-            } else {
-                System.err.println("Terminal state isn't the token");
-            }
+            parseTerminal(state);
         }
 
         // Parse a non terminal
         if (nonTerminals.contains(state)) {
-            Rule goalRule = null;
-            for (Rule rule : rules.get(state)) {
-                if (isRuleValid(state, rule)) {
-                    goalRule = rule;
-                    break;
-                }
-            }
+            parseNonTerminal(state);
+        }
 
-            // TODO: 5/17/19 this if is redundant
-            if (goalRule != null) {
-                for (String component : goalRule.getComponents()) {
+        onStateExit(state);
+    }
 
-                    if (terminals.contains(component)) {
-                        if (isTokenMatch(component) || component.equals("eps")) {
-                            parse(component);
-                        } else {
-                            if (component.equals("eof")) {
-                                OutputHandler.getInstance().printEOFError("Malformed Input", token.getLineNumber());
-                                throw new EOFException();
-                            } else
-                                OutputHandler.getInstance().printTerminalError(component, "Missing",
-                                        token.getLineNumber());
-                        }
-                    }
+    // For future convenience
+    private void onStateEnter(String state) {
+        depth++;
+        OutputHandler.getInstance().printParser(state, depth);
+    }
 
+    // For future convenience
+    private void onStateExit(String state) {
+        depth--;
+    }
 
-                    if (nonTerminals.contains(component)) {
-                        Set<String> first = firsts.get(component), follow = follows.get(component);
-                        while (!first.contains(getTokenString()) && !follow.contains(getTokenString())) {
-                            OutputHandler.getInstance().printTerminalError(getTokenString(), "Unexpected",
-                                    token.getLineNumber());
-                            if (token.getType() == TokenType.EOF)
-                                throw new EOFException();
+    private void parseTerminal(String state) {
+        if (isTokenMatch(state)) {
+            // This token has been parsed
+            if (!token.isEOF())
+                token = tokenizer.getNextToken();
+        } else {
+            System.err.println("Terminal state isn't the token");
+        }
+    }
 
-                            if (!token.isEOF())
-                                token = tokenizer.getNextToken();
-                            else {
-                                depth--;
-                                return;
-                            }
-                        }
-                        if (!first.contains(getTokenString()) && !first.contains("eps")) {
-                            if (token.getType() != TokenType.EOF)
-                                OutputHandler.getInstance().printNonTerminalError(component, token.getLineNumber());
-                            else {
-                                OutputHandler.getInstance().printEOFError("Unexpected EndOfFile", token.getLineNumber());
-                                throw new EOFException();
-                            }
-                        } else {
-                            parse(component);
-                        }
-                    }
-                }
-            } else {
-                // None of the rules match
-                System.err.println("Didn't expect this!");
+    private void parseNonTerminal(String state) throws EOFException {
+        Rule goalRule = null;
+        for (Rule rule : rules.get(state)) {
+            if (isRuleValid(state, rule)) {
+                goalRule = rule;
+                break;
             }
         }
 
-        depth--;
+        // TODO: 5/17/19 this if is redundant
+        if (goalRule != null) {
+            for (String component : goalRule.getComponents()) {
+
+                if (terminals.contains(component)) {
+                    if (isTokenMatch(component) || component.equals("eps")) {
+                        parse(component);
+                    } else {
+                        if (component.equals("eof")) {
+                            OutputHandler.getInstance().printEOFError("Malformed Input", token.getLineNumber());
+                            throw new EOFException();
+                        } else
+                            OutputHandler.getInstance().printTerminalError(component, "Missing",
+                                    token.getLineNumber());
+                    }
+                }
+
+
+                if (nonTerminals.contains(component)) {
+                    Set<String> first = firsts.get(component), follow = follows.get(component);
+                    while (!first.contains(getTokenString()) && !follow.contains(getTokenString())) {
+                        OutputHandler.getInstance().printTerminalError(getTokenString(), "Unexpected",
+                                token.getLineNumber());
+                        if (token.getType() == TokenType.EOF)
+                            throw new EOFException();
+
+                        if (!token.isEOF())
+                            token = tokenizer.getNextToken();
+                        else {
+                            return;
+                        }
+                    }
+                    if (!first.contains(getTokenString()) && !first.contains("eps")) {
+                        if (token.getType() != TokenType.EOF)
+                            OutputHandler.getInstance().printNonTerminalError(component, token.getLineNumber());
+                        else {
+                            OutputHandler.getInstance().printEOFError("Unexpected EndOfFile", token.getLineNumber());
+                            throw new EOFException();
+                        }
+                    } else {
+                        parse(component);
+                    }
+                }
+            }
+        } else {
+            // None of the rules match
+            System.err.println("Didn't expect this!");
+        }
     }
 
     private boolean isRuleValid(String state, Rule rule) {
@@ -261,7 +277,6 @@ public class Parser {
     private boolean isTokenMatch(String state) {
         return state.equals(getTokenString());
     }
-
 
     static class Rule {
         private List<String> comps;
