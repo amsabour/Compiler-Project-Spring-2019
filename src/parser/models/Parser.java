@@ -137,6 +137,8 @@ public class Parser {
             parse("Program");
         } catch (EOFException ignored) {
             // Encountered EOFException. Stopping parse.
+        } finally {
+            OutputHandler.getInstance().flushErrorBuffer();
         }
     }
 
