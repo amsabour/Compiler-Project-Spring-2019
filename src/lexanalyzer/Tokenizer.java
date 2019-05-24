@@ -304,8 +304,10 @@ public class Tokenizer {
             Token token = getNextToken_();
             // Returned token is an error token
             if (token.isError()) {
-                OutputHandler.getInstance().printLexicalError(token.getType().toString() + " " + token.getText().trim(), token.getLineNumber());
+                OutputHandler.getInstance().printLexicalError(token.getType().toString() + " " +
+                        token.getText().trim(), token.getLineNumber());
             } else if (!token.isWhite()) {
+                OutputHandler.getInstance().printLexer(token);
                 return token;
             }
         }

@@ -1,6 +1,6 @@
 package io;
 
-import javafx.util.Pair;
+import lexanalyzer.models.Token;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,21 +10,29 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.Error.ErrorType;
+import static io.Error.ErrorType.LexicalError;
+import static io.Error.ErrorType.SyntaxError;
+
 public class OutputHandler implements Closeable {
     private Formatter parserFormatter;
-
+    private Formatter lexerFormatter;
     private Formatter errorFormatter;
 
     private HashMap<String, String> nonTerminalDescriptions = new HashMap<>();
 
-    private ArrayList<Pair<String, ErrorType>> errorBuffer;
-    private int bufferLineNumber;
+    private ArrayList<Error> errorBuffer;
+    private ArrayList<Token> tokenBuffer;
+    private int errorLineNumber;
+    private int lexerLineNumber;
 
     private static OutputHandler instance;
 
     private OutputHandler() {
         errorBuffer = new ArrayList<>();
-        bufferLineNumber = 1;
+        tokenBuffer = new ArrayList<>();
+        errorLineNumber = 1;
+        lexerLineNumber = 1;
         try {
             Scanner scanner = new Scanner(new FileInputStream("resources/nonterminal_descriptions.txt"));
             while (scanner.hasNextLine()) {
@@ -44,6 +52,7 @@ public class OutputHandler implements Closeable {
             outputDirectory.mkdir();
         try {
             parserFormatter = new Formatter(new FileOutputStream("output/parser.txt"));
+            lexerFormatter = new Formatter(new FileOutputStream("output/scanner.txt"));
             errorFormatter = new Formatter(new FileOutputStream("output/error.txt"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -64,39 +73,51 @@ public class OutputHandler implements Closeable {
         parserFormatter.format(state + "\n");
     }
 
+    public void printLexer(Token token) {
+        flushIfNewLexerLine(token.getLineNumber());
+        tokenBuffer.add(token);
+    }
+
     public void printLexicalError(String errorType, int lineNumber) {
-        flushIfNewline(lineNumber);
-        addToBuffer(errorType, ErrorType.LexicalError);
+        flushIfNewErrorLine(lineNumber);
+        addToErrorBuffer(errorType, LexicalError);
 //        errorFormatter.format(lineNumber + ": Lexical Error! " + errorType + "\n");
     }
 
     public void printNonTerminalError(String nonTerminal, int lineNumber) {
-        flushIfNewline(lineNumber);
-        addToBuffer(nonTerminalDescriptions.get(nonTerminal), ErrorType.SyntaxError);
+        flushIfNewErrorLine(lineNumber);
+        addToErrorBuffer("Missing " + nonTerminalDescriptions.get(nonTerminal), SyntaxError);
 //        errorFormatter.format(lineNumber + ": Syntax Error! Missing " +
 //                nonTerminalDescriptions.get(nonTerminal) + "\n");
     }
 
     public void printTerminalError(String terminal, String errorType, int lineNumber) {
-        flushIfNewline(lineNumber);
-        addToBuffer(errorType + " " + terminal, ErrorType.SyntaxError);
+        flushIfNewErrorLine(lineNumber);
+        addToErrorBuffer(errorType + " " + terminal, SyntaxError);
 //        errorFormatter.format(lineNumber + ": Syntax Error! " + errorType + " " + terminal + "\n");
     }
 
     public void printEOFError(String errorType, int lineNumber) {
-        flushIfNewline(lineNumber);
-        addToBuffer(errorType, ErrorType.SyntaxError);
+        flushIfNewErrorLine(lineNumber);
+        addToErrorBuffer(errorType, SyntaxError);
 //        errorFormatter.format(lineNumber + ": Syntax Error! " + errorType + "\n");
     }
 
-    private void addToBuffer(String error, ErrorType type) {
-        errorBuffer.add(new Pair<>(error, type));
+    private void addToErrorBuffer(String error, ErrorType type) {
+        errorBuffer.add(new Error(error, type));
     }
 
-    private void flushIfNewline(int lineNumber) {
-        if (lineNumber > bufferLineNumber) {
+    private void flushIfNewErrorLine(int lineNumber) {
+        if (lineNumber > errorLineNumber) {
             flushErrorBuffer();
-            bufferLineNumber = lineNumber;
+            errorLineNumber = lineNumber;
+        }
+    }
+
+    private void flushIfNewLexerLine(int lineNumber) {
+        if (lineNumber > lexerLineNumber) {
+            flushLexerBuffer();
+            lexerLineNumber = lineNumber;
         }
     }
 
@@ -104,30 +125,39 @@ public class OutputHandler implements Closeable {
         ArrayList<String> lexErrors = new ArrayList<>();
         ArrayList<String> syntaxErrors = new ArrayList<>();
 
-        for (Pair<String, ErrorType> error : errorBuffer) {
-            switch (error.getValue()) {
+        for (Error error : errorBuffer) {
+            switch (error.getType()) {
                 case LexicalError:
-                    lexErrors.add(error.getKey());
+                    lexErrors.add(error.getMessage());
                     break;
                 case SyntaxError:
-                    syntaxErrors.add(error.getKey());
+                    syntaxErrors.add(error.getMessage());
                     break;
             }
         }
 
         if (!lexErrors.isEmpty()) {
-            errorFormatter.format("Line " + bufferLineNumber + " lexical errors: ");
+            errorFormatter.format("Line " + errorLineNumber + " lexical errors: ");
             prettyPrintErrors(lexErrors);
             errorFormatter.format("\n");
         }
 
         if (!syntaxErrors.isEmpty()) {
-            errorFormatter.format("Line " + bufferLineNumber + " syntax errors: ");
+            errorFormatter.format("Line " + errorLineNumber + " syntax errors: ");
             prettyPrintErrors(syntaxErrors);
             errorFormatter.format("\n");
         }
 
         errorBuffer.clear();
+    }
+
+    private void flushLexerBuffer() {
+        lexerFormatter.format(lexerLineNumber + ". ");
+        for (Token token : tokenBuffer) {
+            lexerFormatter.format("(" + token.getType() + ", " + token.getText() + ") ");
+        }
+        lexerFormatter.format("\n");
+        tokenBuffer.clear();
     }
 
     private void prettyPrintErrors(ArrayList<String> errors) {
@@ -142,12 +172,9 @@ public class OutputHandler implements Closeable {
     @Override
     public void close() {
         parserFormatter.close();
+        lexerFormatter.close();
         errorFormatter.close();
     }
 
-    static enum ErrorType {
-        LexicalError,
-        SyntaxError
-    }
 }
 

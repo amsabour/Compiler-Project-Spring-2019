@@ -199,7 +199,7 @@ public class Parser {
             }
         }
 
-        // TODO: 5/17/19 this if is redundant
+        // redundant if used for debugging
         if (goalRule != null) {
             for (String component : goalRule.getComponents()) {
 
@@ -245,7 +245,8 @@ public class Parser {
             }
         } else {
             // None of the rules match
-            System.err.println("Didn't expect this!");
+            // used for debugging
+            System.err.print("");
         }
     }
 
