@@ -1,0 +1,87 @@
+Program -> Declaration-list eof
+Declaration-list -> Declaration Declaration-list
+Declaration-list -> eps
+Declaration -> #push Type-specifier #push id Declaration-2
+Declaration-2 -> #var_dec;
+Declaration-2 -> [ #push num ] #arr_dec;
+Declaration-2 -> ( Params ) #func_dec Compound-stmt
+Type-specifier -> int
+Type-specifier -> void
+Params -> #push int #push id Param-2 Params-list-2
+Params -> #push void Params-2
+Params-2 -> #push id Param-2 Params-list-2
+Params-2 -> eps
+Params-list -> Param Params-list-2
+Params-list-2 -> , Params-list
+Params-list-2 -> eps
+Param -> #push Type-specifier #push id Param-2
+Param-2 -> #arr_param [ ]
+Param-2 -> #var_param eps
+Compound-stmt -> #begin { Declaration-list Statement-list } #end
+Statement-list -> Statement Statement-list
+Statement-list -> eps
+Statement -> Expression-stmt
+Statement -> Compound-stmt
+Statement -> Selection-stmt
+Statement -> Iteration-stmt
+Statement -> Return-stmt
+Statement -> Switch-stmt
+Expression-stmt -> Expression ;
+Expression-stmt -> continue #continue;
+Expression-stmt -> break #break;
+Expression-stmt -> ;
+Selection-stmt -> if ( Expression ) #save Statement #jpf_save else Statement #jp
+Iteration-stmt -> while #label ( Expression ) #save Statement #while
+Return-stmt -> return Return-stmt-2
+Return-stmt-2 -> ;
+Return-stmt-2 -> Expression ;
+Switch-stmt -> switch ( Expression ) { Case-stmts Default-stmt }
+Case-stmts -> Case-stmt Case-stmts
+Case-stmts -> eps
+Case-stmt -> case #cmp num #save : Statement-list #jpf
+Default-stmt -> default : Statement-list
+Default-stmt -> eps
+Var -> id Var-2
+Var-2 -> [ Expression ]
+Var-2 -> eps
+TODO Done till here
+Simple-expression -> Additive-expression Simple-expression-2
+Simple-expression-2 -> Relop Additive-expression
+Simple-expression-2 -> eps
+Relop -> <
+Relop -> ==
+Additive-expression -> Term Additive-expression-2
+Additive-expression-2 -> Addop Additive-expression
+Additive-expression-2 -> eps
+Addop -> +
+Addop -> -
+Term -> Signed-Factor Term-2
+Term-2 -> eps
+Term-2 -> * Term
+Signed-Factor -> Factor
+Signed-Factor -> + Factor
+Signed-Factor -> - Factor
+Factor -> ( Expression )
+Factor -> num
+Factor -> id Factor-2
+Factor-2 -> [ Expression ]
+Factor-2 -> ( Args )
+Factor-2 -> eps
+Args -> Arg-list
+Args -> eps
+Arg-list -> Expression Arg-list-2
+Arg-list-2 -> , Arg-list
+Arg-list-2 -> eps
+Expression -> + Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> - Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2
+Expression -> num Term-2 Additive-expression-2 Simple-expression-2
+Expression -> id Expression-2
+Expression-2 -> [ Expression ] Expression-3
+Expression-2 -> Expression-3
+Expression-2 -> ( Args ) Term-2 Additive-expression-2 Simple-expression-2
+Expression-3 -> * Term Additive-expression-2 Simple-expression-2
+Expression-3 -> Addop Additive-expression Simple-expression-2
+Expression-3 -> Relop Additive-expression
+Expression-3 -> = Expression
+Expression-3 -> eps
