@@ -3,6 +3,7 @@ package semantics;
 import semantics.exceptions.SymbolNameTakenException;
 import semantics.exceptions.SymbolNotFoundException;
 import semantics.model.SymbolTable;
+import semantics.model.SymbolType;
 
 import java.util.Stack;
 
@@ -25,7 +26,9 @@ class MemoryHandler {
     }
 
     void allocateFunc(String name, int args) throws SymbolNameTakenException {
-        symbolTables.peek().addSymbol(name, Function, memPointer);
+        // TODO Fix this (Get function type as input???)
+        SymbolType functionType = SymbolType.VOID_Function;
+        symbolTables.peek().addSymbol(name, functionType, memPointer);
         memPointer += args * VAR_SIZE;
     }
 

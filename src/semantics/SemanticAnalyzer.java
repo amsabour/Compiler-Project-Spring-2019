@@ -11,6 +11,9 @@ public class SemanticAnalyzer {
     private Stack<String> semanticStack = new Stack<>();
     private ArrayList<String> programBlock = new ArrayList<>();
 
+    // Program counter
+    private int i = 0;
+
     void callRoutine(String name) {
         try {
             getClass().getDeclaredMethod(name).invoke(this);
@@ -19,6 +22,7 @@ public class SemanticAnalyzer {
         }
     }
 
+    // TODO Handle this somehow....
     // the following methods are semantic routines
 
     void push(String input) {

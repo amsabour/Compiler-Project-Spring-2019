@@ -4,7 +4,7 @@ Declaration-list -> eps
 Declaration -> #push Type-specifier #push id Declaration-2
 Declaration-2 -> #var_dec;
 Declaration-2 -> [ #push num ] #arr_dec;
-Declaration-2 -> ( Params ) #func_dec Compound-stmt
+Declaration-2 -> #func_dec_begin ( Params ) #func_dec_end Compound-stmt #add_func_to_symbol_table
 Type-specifier -> int
 Type-specifier -> void
 Params -> #push int #push id Param-2 Params-list-2
@@ -33,16 +33,16 @@ Expression-stmt -> ;
 Selection-stmt -> if ( Expression ) #save Statement #jpf_save else Statement #jp
 Iteration-stmt -> while #label ( Expression ) #save Statement #while
 Return-stmt -> return Return-stmt-2
-Return-stmt-2 -> ;
-Return-stmt-2 -> Expression ;
-Switch-stmt -> switch ( Expression ) { Case-stmts Default-stmt }
+Return-stmt-2 -> #return_void;
+Return-stmt-2 -> Expression #return_expr;
+Switch-stmt -> switch #switch ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
 Case-stmts -> Case-stmt Case-stmts
 Case-stmts -> eps
-Case-stmt -> case #cmp num #save : Statement-list #jpf
+Case-stmt -> case #push #cmp num #save : Statement-list #jpf
 Default-stmt -> default : Statement-list
 Default-stmt -> eps
-Var -> id Var-2
-Var-2 -> [ Expression ]
+Var -> #push id Var-2
+Var-2 -> [ Expression #update_addr]
 Var-2 -> eps
 TODO Done till here
 Simple-expression -> Additive-expression Simple-expression-2

@@ -5,12 +5,12 @@ import semantics.exceptions.SymbolNameTakenException;
 import java.util.HashMap;
 
 public class SymbolTable {
-    private HashMap<String, Pair> table;
+    private HashMap<String, Symbol> table;
 
     public void addSymbol(String name, SymbolType type, int address) throws SymbolNameTakenException {
         if (table.containsKey(name))
             throw new SymbolNameTakenException(name);
-        table.put(name, new Pair(type, address));
+        table.put(name, new Symbol(type, address));
     }
 
     public SymbolType getType(String name) {
@@ -22,11 +22,12 @@ public class SymbolTable {
     }
 
 
-    private class Pair {
+    private class Symbol {
         private SymbolType type;
         private int address;
+        // TODO Add something here
 
-        Pair(SymbolType type, int address) {
+        Symbol(SymbolType type, int address) {
             this.type = type;
             this.address = address;
         }

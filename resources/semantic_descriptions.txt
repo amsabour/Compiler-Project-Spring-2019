@@ -1,0 +1,51 @@
+#push: push the next TYPE, ID, NUM, onto the stack
+
+#var_dec: stack(top) = var_name, stack(top-1) = var_type . Add these to the current symbol table and pop(2)
+
+#arr_dec: stack(top) = array_size, stack(top-1) = array_name, stack(top-2) = array_type. Add these to the current symbol table and pop(3)
+
+#func_dec_begin: stack(top) = func_name, stack(top-1) = func_type. Instantiate new symbol table. Add func name and type to it and pop(2)
+
+#func_dec_end: All params have been added to the symbol table. Update functions parameters. (their number, their types, ...).
+Add special symbol to signal new scope has been created
+
+#add_func_to_symbol_table: Pop the current symbol table but add it's function to the upper symbol table (So we may call it in other places within that scope)
+
+TODO (Shouldn't these have a fixed address???)
+******************************************************************************************
+#arr_param: stack(top) = array_name, stack(top-1) = array_type. Add these to symbol table
+#var_param: stack(top) = var_name, stack(top-1) = var_type. Add these to symbol table
+******************************************************************************************
+
+
+
+#start_scope: add new symbol table to stack
+#start_scope_breakable: add new symbol table to stack which has the flag breakable active
+#end_scope: pop symbol table from stack
+
+#save: push(i), i = i+1
+#jpf_save: stack(top) = location for if statement jpf. Fill this.pop(1),  push(i), i = i+1 (This new one is for unconditional jump)
+#jp: PB[stack(top)] = (jp, i), pop(1)
+
+#label: push(i)
+
+#while: PB[i] = (jp, stack(top-2)), i = i+1, PB[stack(top)] = (jpf, stack(top-1), i), pop(3)
+
+
+
+#continue: ????
+#break: ????
+#return_void: ???????
+#return_expr: ???????
+
+
+#cmp: stack(top) = case_val, stack(top-1) = switch_expr. compare these two and assign its value to temp. pop(1), push(temp)
+#jpf: PB[stack(top)] = (jpf, stack(top-1), i)
+
+#update_addr: stack(top-1) = array_pointer, stack(top) = element_number, pop(2) push(array_pointer + 4 * element_number)
+
+
+
+#switch : PB[i] = (jp, i+2) , i = i + 1, push(i) (To be filled with unconditional jump to after switch incase of break), i = i + 1
+
+
