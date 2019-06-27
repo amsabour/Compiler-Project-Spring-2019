@@ -56,11 +56,13 @@ public class SemanticAnalyzer {
         String type = semanticStack.pop();
         if (type.equals("void")) {
             // TODO: 6/21/19 Error
+            System.err.println("Var type is void");
         }
         try {
             memoryHandler.allocateVar(name);
         } catch (SymbolNameTakenException e) {
             // TODO: 6/21/19 Error
+            System.err.println("Var name already taken");
         }
         System.out.println("Semantic routine called: var_dec");
     }
@@ -71,11 +73,13 @@ public class SemanticAnalyzer {
         String type = semanticStack.pop();
         if (type.equals("void")) {
             // TODO: 6/21/19 Error
+            System.err.println("Array type is void");
         }
         try {
             memoryHandler.allocateArray(name, size);
         } catch (SymbolNameTakenException e) {
             // TODO: 6/21/19 Error
+            System.err.println("Array name already taken");
         }
         System.out.println("Semantic routine called: arr_dec");
     }
@@ -174,10 +178,38 @@ public class SemanticAnalyzer {
 
     void calc() {
         System.out.println("Semantic routine called: calc");
+        String second = semanticStack.pop();
+        String op = semanticStack.pop();
+        String first = semanticStack.pop();
+        String command = null;
+        switch (op) {
+            case "+":
+                command = "ADD";
+                break;
+            case "-":
+                command = "SUB";
+                break;
+            case "*":
+                command = "MULT";
+                break;
+            case "<":
+                command = "LT";
+                break;
+            case "==":
+                command = "EQ";
+                break;
+        }
+        int t = memoryHandler.getTemp();
+        programBlock.add(i, "(" + command + "," + first + "," + second + "," + t + ")");
+        i++;
+        pop(3);
+        semanticStack.push("" + t);
     }
 
     void push_minusone_mult() {
         System.out.println("Semantic routine called: push_minusone_mult");
+        semanticStack.push("#-1");
+        semanticStack.push("*");
     }
 
     void pid(String input) {
@@ -185,7 +217,8 @@ public class SemanticAnalyzer {
         try {
             semanticStack.push("" + memoryHandler.findAddress(input));
         } catch (SymbolNotFoundException e) {
-            e.printStackTrace();
+            // TODO: 6/28/19 Error
+            System.err.println("Symbol Not found");
         }
     }
 
@@ -200,18 +233,31 @@ public class SemanticAnalyzer {
 
     void start_set_param() {
         System.out.println("Semantic routine called: start_set_param");
+        // TODO: 6/28/19 Fix following line for void functions
+        semanticStack.push("2");
     }
 
     void end_set_param() {
         System.out.println("Semantic routine called: end_set_param");
+        pop(1);
     }
 
     void call() {
         System.out.println("Semantic routine called: call");
+        programBlock.add(i, "(ASSIGN," + (i + 2) + "," + ss(0) + ",)");
+        i++;
+        // TODO: 6/28/19 Implement getFunctionAddressByName to find address location in program block
+//        programBlock.add(i, "(JP," + memoryHandler.getFunctionAddressByName(ss(1)));
+        i++;
     }
 
     void set_param() {
         System.out.println("Semantic routine called: set_param");
+        int paramAddress = Integer.parseInt(ss(1)) + Integer.parseInt(ss(2));
+        programBlock.add(i, "(ASSIGN," + ss(0) + "," + paramAddress + ",)");
+        i++;
+        semanticStack.add(semanticStack.size() - 2, "" + Integer.parseInt(ss(1)) + 1);
+        pop(1);
     }
 
     void assign() {

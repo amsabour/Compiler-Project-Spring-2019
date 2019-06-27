@@ -77,12 +77,12 @@ Expression -> #push + Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> #push - Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2
 Expression -> #push num Term-2 Additive-expression-2 Simple-expression-2
-Expression -> #pid id Expression-2
+Expression -> #push #pid id Expression-2
 Expression-2 -> [ Expression ] #get_arr_element Expression-3
 Expression-2 -> Expression-3
 Expression-2 -> ( #start_set_param Args #end_set_param ) #call Term-2 Additive-expression-2 Simple-expression-2
 Expression-3 -> #push * Term #calc Additive-expression-2 Simple-expression-2
-Expression-3 -> Addop Additive-expression Simple-expression-2
-Expression-3 -> Relop Additive-expression
+Expression-3 -> Addop Additive-expression #calc Simple-expression-2
+Expression-3 -> Relop Additive-expression #calc
 Expression-3 -> = Expression #assign
 Expression-3 -> eps

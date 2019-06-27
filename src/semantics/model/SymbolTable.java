@@ -18,7 +18,7 @@ public class SymbolTable {
     }
 
     public Integer getAddress(String name) {
-        return table.get(name).getAddress();
+        return table.get(name) != null ? table.get(name).getAddress() : null;
     }
 
 
