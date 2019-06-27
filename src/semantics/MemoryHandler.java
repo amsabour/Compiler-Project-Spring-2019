@@ -15,6 +15,10 @@ class MemoryHandler {
 
     private static final int VAR_SIZE = 4;
 
+    MemoryHandler() {
+        symbolTables.push(new SymbolTable());
+    }
+
     void allocateVar(String name) throws SymbolNameTakenException {
         symbolTables.peek().addSymbol(name, Variable, memPointer);
         memPointer += VAR_SIZE;

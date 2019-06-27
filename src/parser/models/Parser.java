@@ -205,7 +205,7 @@ public class Parser {
         if (goalRule != null) {
             for (String component : goalRule.getComponents()) {
                 if (component.startsWith("#")) {
-                    semanticAnalyzer.callRoutine(component.substring(1), token);
+                    semanticAnalyzer.callRoutine(component.substring(1), token.getText());
                 }
 
                 if (terminals.contains(component)) {

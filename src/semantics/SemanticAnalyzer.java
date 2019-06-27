@@ -1,7 +1,7 @@
 package semantics;
 
-import lexanalyzer.models.Token;
 import semantics.exceptions.SymbolNameTakenException;
+import semantics.exceptions.SymbolNotFoundException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -15,14 +15,27 @@ public class SemanticAnalyzer {
     // Program counter
     private int i = 0;
 
-    public void callRoutine(String name, Token input) {
+    public void callRoutine(String name, String input) {
         try {
-            if (name.equals("push"))
-                getClass().getDeclaredMethod(name, Token.class).invoke(this, input);
+            if (name.equals("push") || name.equals("pid"))
+                getClass().getDeclaredMethod(name, String.class).invoke(this, input);
             else
                 getClass().getDeclaredMethod(name).invoke(this);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    private String ss(int fromTop) {
+        if (fromTop == 0)
+            return semanticStack.peek();
+        else
+            return semanticStack.get(semanticStack.size() - fromTop - 1);
+    }
+
+    private void pop(int n) {
+        for (int j = 0; j < n; j++) {
+            semanticStack.pop();
         }
     }
 
@@ -33,37 +46,37 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: has_dec");
     }
 
-    void push(Token input) {
-//        semanticStack.push(input);
+    void push(String input) {
         System.out.println("Semantic routine called: push");
+        semanticStack.push(input);
     }
 
     void var_dec() {
-//        String name = semanticStack.pop();
-//        String type = semanticStack.pop();
-//        if (type.equals("void")) {
-//            // TODO: 6/21/19 Error
-//        }
-//        try {
-//            memoryHandler.allocateVar(name);
-//        } catch (SymbolNameTakenException e) {
-//            // TODO: 6/21/19 Error
-//        }
+        String name = semanticStack.pop();
+        String type = semanticStack.pop();
+        if (type.equals("void")) {
+            // TODO: 6/21/19 Error
+        }
+        try {
+            memoryHandler.allocateVar(name);
+        } catch (SymbolNameTakenException e) {
+            // TODO: 6/21/19 Error
+        }
         System.out.println("Semantic routine called: var_dec");
     }
 
     void arr_dec() {
-//        int size = Integer.parseInt(semanticStack.pop());
-//        String name = semanticStack.pop();
-//        String type = semanticStack.pop();
-//        if (type.equals("void")) {
-//            // TODO: 6/21/19 Error
-//        }
-//        try {
-//            memoryHandler.allocateArray(name, size);
-//        } catch (SymbolNameTakenException e) {
-//            // TODO: 6/21/19 Error
-//        }
+        int size = Integer.parseInt(semanticStack.pop());
+        String name = semanticStack.pop();
+        String type = semanticStack.pop();
+        if (type.equals("void")) {
+            // TODO: 6/21/19 Error
+        }
+        try {
+            memoryHandler.allocateArray(name, size);
+        } catch (SymbolNameTakenException e) {
+            // TODO: 6/21/19 Error
+        }
         System.out.println("Semantic routine called: arr_dec");
     }
 
@@ -167,12 +180,22 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: push_minusone_mult");
     }
 
-    void pid() {
+    void pid(String input) {
         System.out.println("Semantic routine called: pid");
+        try {
+            semanticStack.push("" + memoryHandler.findAddress(input));
+        } catch (SymbolNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     void get_arr_element() {
         System.out.println("Semantic routine called: get_arr_element");
+        int t = memoryHandler.getTemp();
+        programBlock.add(i, "(ADD," + ss(1) + "," + ss(0) + "," + t + ")");
+        i++;
+        pop(2);
+        semanticStack.push("" + t);
     }
 
     void start_set_param() {
@@ -193,6 +216,8 @@ public class SemanticAnalyzer {
 
     void assign() {
         System.out.println("Semantic routine called: assign");
+        programBlock.add(i, "(ASSIGN," + ss(0) + "," + ss(1) + ",)");
+        i++;
     }
 
 }

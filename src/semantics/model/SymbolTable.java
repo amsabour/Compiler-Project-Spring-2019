@@ -5,7 +5,7 @@ import semantics.exceptions.SymbolNameTakenException;
 import java.util.HashMap;
 
 public class SymbolTable {
-    private HashMap<String, Symbol> table;
+    private HashMap<String, Symbol> table = new HashMap<>();
 
     public void addSymbol(String name, SymbolType type, int address) throws SymbolNameTakenException {
         if (table.containsKey(name))
