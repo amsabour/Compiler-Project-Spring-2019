@@ -2,8 +2,8 @@ Program -> Declaration-list #has_main eof
 Declaration-list -> Declaration Declaration-list
 Declaration-list -> eps
 Declaration -> #push Type-specifier #push id Declaration-2
-Declaration-2 -> #var_dec;
-Declaration-2 -> [ #push num ] #arr_dec;
+Declaration-2 -> #var_dec ;
+Declaration-2 -> [ #push num ] #arr_dec ;
 Declaration-2 -> #func_dec_begin ( Params ) #func_dec_end Compound-stmt #add_func_to_symbol_table
 Type-specifier -> int
 Type-specifier -> void
@@ -27,15 +27,15 @@ Statement -> Iteration-stmt
 Statement -> Return-stmt
 Statement -> Switch-stmt
 Expression-stmt -> Expression ;
-Expression-stmt -> continue #continue;
-Expression-stmt -> break #break;
+Expression-stmt -> continue #continuez ;
+Expression-stmt -> break #breakz ;
 Expression-stmt -> ;
 Selection-stmt -> if ( Expression ) #save Statement #jpf_save else Statement #jp
-Iteration-stmt -> while #label ( Expression ) #save Statement #while
+Iteration-stmt -> while #label ( Expression ) #save Statement #whilez
 Return-stmt -> return Return-stmt-2
-Return-stmt-2 -> #return_void;
-Return-stmt-2 -> Expression #return_expr;
-Switch-stmt -> switch #switch ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
+Return-stmt-2 -> #return_void ;
+Return-stmt-2 -> Expression #return_expr ;
+Switch-stmt -> switch #switchz ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
 Case-stmts -> Case-stmt Case-stmts
 Case-stmts -> eps
 Case-stmt -> case #push #cmp num #save : Statement-list #jpf
@@ -43,7 +43,7 @@ Default-stmt -> default : Statement-list
 Default-stmt -> eps
 TODO Var never used!
 Var -> #push id Var-2
-Var-2 -> [ Expression #update_addr]
+Var-2 -> [ Expression #update_addr ]
 Var-2 -> eps
 TODO Simple-expression never used!
 Simple-expression -> Additive-expression Simple-expression-2

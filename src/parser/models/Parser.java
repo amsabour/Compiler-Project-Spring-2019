@@ -5,6 +5,7 @@ import lexanalyzer.Tokenizer;
 import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
 import parser.exceptions.EOFException;
+import semantics.SemanticAnalyzer;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +24,7 @@ public class Parser {
 
     private static HashMap<String, List<Rule>> rules = new HashMap<>();
 
+    private SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
     // All of this has been obtained from using the grammar on this website : https://mikedevice.github.io/first-follow/
     // Grammar used will be included
 
@@ -70,11 +72,11 @@ public class Parser {
     // initializing rules
     private static void loadRules() {
         try {
-            FileInputStream inputStream = new FileInputStream("resources/rules.txt");
+            FileInputStream inputStream = new FileInputStream("resources/rules_semantics.txt");
             Scanner scanner = new Scanner(inputStream);
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                if (line.length() > 0) {
+                if (line.length() > 0 && !line.startsWith("TODO")) {
                     String key = null;
                     List<String> rule = new ArrayList<>();
                     Matcher matcher = Pattern.compile("(\\S+) ->| (\\S+)").matcher(line);
@@ -151,7 +153,7 @@ public class Parser {
         }
 
         if (!terminals.contains(state) && !nonTerminals.contains(state)) {
-            System.err.println("WHAT THE FUCK???");
+            System.err.println("WHAT THE FUCK");
             onStateExit(state);
             return;
         }
@@ -202,6 +204,9 @@ public class Parser {
         // redundant if used for debugging
         if (goalRule != null) {
             for (String component : goalRule.getComponents()) {
+                if (component.startsWith("#")) {
+                    semanticAnalyzer.callRoutine(component.substring(1), token);
+                }
 
                 if (terminals.contains(component)) {
                     if (isTokenMatch(component) || component.equals("eps")) {
@@ -296,12 +301,14 @@ public class Parser {
             Set<String> first = new HashSet<>();
             boolean isNullable = true;
             for (String compoennt : comps) {
-                first.addAll(firsts.get(compoennt));
-                if (first.contains("eps"))
-                    first.remove("eps");
-                else {
-                    isNullable = false;
-                    break;
+                if (!compoennt.startsWith("#")) {
+                    first.addAll(firsts.get(compoennt));
+                    if (first.contains("eps"))
+                        first.remove("eps");
+                    else {
+                        isNullable = false;
+                        break;
+                    }
                 }
             }
             if (isNullable)
