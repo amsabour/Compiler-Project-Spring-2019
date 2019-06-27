@@ -1,4 +1,4 @@
-Program -> Declaration-list eof
+Program -> Declaration-list #has_main eof
 Declaration-list -> Declaration Declaration-list
 Declaration-list -> eps
 Declaration -> #push Type-specifier #push id Declaration-2
@@ -41,47 +41,48 @@ Case-stmts -> eps
 Case-stmt -> case #push #cmp num #save : Statement-list #jpf
 Default-stmt -> default : Statement-list
 Default-stmt -> eps
+TODO Var never used!
 Var -> #push id Var-2
 Var-2 -> [ Expression #update_addr]
 Var-2 -> eps
-TODO Done till here
+TODO Simple-expression never used!
 Simple-expression -> Additive-expression Simple-expression-2
-Simple-expression-2 -> Relop Additive-expression
+Simple-expression-2 -> Relop Additive-expression #calc
 Simple-expression-2 -> eps
-Relop -> <
-Relop -> ==
+Relop -> #push <
+Relop -> #push ==
 Additive-expression -> Term Additive-expression-2
-Additive-expression-2 -> Addop Additive-expression
+Additive-expression-2 -> Addop Additive-expression #calc
 Additive-expression-2 -> eps
-Addop -> +
-Addop -> -
+Addop -> #push +
+Addop -> #push -
 Term -> Signed-Factor Term-2
 Term-2 -> eps
-Term-2 -> * Term
+Term-2 -> #push * Term #calc
 Signed-Factor -> Factor
 Signed-Factor -> + Factor
-Signed-Factor -> - Factor
+Signed-Factor -> #push_minusone_mult - Factor #calc
 Factor -> ( Expression )
-Factor -> num
-Factor -> id Factor-2
-Factor-2 -> [ Expression ]
-Factor-2 -> ( Args )
+Factor -> #push num
+Factor -> #pid id Factor-2
+Factor-2 -> [ Expression ] #get_arr_element
+Factor-2 -> ( #start_set_param Args #end_set_param ) #call
 Factor-2 -> eps
 Args -> Arg-list
 Args -> eps
-Arg-list -> Expression Arg-list-2
+Arg-list -> Expression #set_param Arg-list-2
 Arg-list-2 -> , Arg-list
 Arg-list-2 -> eps
-Expression -> + Factor Term-2 Additive-expression-2 Simple-expression-2
-Expression -> - Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> #push + Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> #push - Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2
-Expression -> num Term-2 Additive-expression-2 Simple-expression-2
-Expression -> id Expression-2
-Expression-2 -> [ Expression ] Expression-3
+Expression -> #push num Term-2 Additive-expression-2 Simple-expression-2
+Expression -> #pid id Expression-2
+Expression-2 -> [ Expression ] #get_arr_element Expression-3
 Expression-2 -> Expression-3
-Expression-2 -> ( Args ) Term-2 Additive-expression-2 Simple-expression-2
-Expression-3 -> * Term Additive-expression-2 Simple-expression-2
+Expression-2 -> ( #start_set_param Args #end_set_param ) #call Term-2 Additive-expression-2 Simple-expression-2
+Expression-3 -> #push * Term #calc Additive-expression-2 Simple-expression-2
 Expression-3 -> Addop Additive-expression Simple-expression-2
 Expression-3 -> Relop Additive-expression
-Expression-3 -> = Expression
+Expression-3 -> = Expression #assign
 Expression-3 -> eps
