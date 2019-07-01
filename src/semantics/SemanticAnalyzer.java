@@ -1,7 +1,10 @@
 package semantics;
 
+import semantics.exceptions.ArgumentWithoutFunction;
 import semantics.exceptions.SymbolNameTakenException;
 import semantics.exceptions.SymbolNotFoundException;
+import semantics.model.Symbol;
+import semantics.model.SymbolType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -43,7 +46,7 @@ public class SemanticAnalyzer {
     // the following methods are semantic routines
 
     void has_main() {
-        System.out.println("Semantic routine called: has_dec");
+        System.out.println("Semantic routine called: has_main");
     }
 
     void push(String input) {
@@ -77,51 +80,186 @@ public class SemanticAnalyzer {
         }
         try {
             memoryHandler.allocateArray(name, size);
+            int pointerAddress = memoryHandler.findAddress(name);
+            programBlock.add(i, "(" + "ASSIGN," + "#" + (pointerAddress + MemoryHandler.VAR_SIZE) + "," + pointerAddress + ",)");
+            i += 1;
         } catch (SymbolNameTakenException e) {
             // TODO: 6/21/19 Error
             System.err.println("Array name already taken");
+        } catch (SymbolNotFoundException e) {
+            // This should never happen
+            System.err.println("WHAT THE FUCK?");
         }
         System.out.println("Semantic routine called: arr_dec");
     }
 
     void func_dec_begin() {
         System.out.println("Semantic routine called: func_dec_begin");
+
+        String funcName = semanticStack.pop();
+        String funcType = semanticStack.pop();
+        SymbolType type = null;
+
+        switch (funcType) {
+            case "void":
+                type = SymbolType.VOID_Function;
+                break;
+            case "int":
+                type = SymbolType.INT_Function;
+                break;
+        }
+
+        if (type == null) {
+            System.err.println("This should not happen");
+        }
+
+        semanticStack.push("_FunctionBegin");
+        semanticStack.push(funcName);
+
+        memoryHandler.startNewScope();
+
+        try {
+            memoryHandler.allocateFunc(funcName, type);
+        } catch (SymbolNameTakenException e) {
+            System.err.println("Function name already taken");
+        }
     }
 
     void func_dec_end() {
         System.out.println("Semantic routine called: func_dec_end");
+
+        String functionName = semanticStack.peek();
+        String functionBegin = semanticStack.get(semanticStack.size() - 2);
+        assert functionBegin.equals("_FunctionBegin");
     }
 
     void add_func_to_symbol_table() {
         System.out.println("Semantic routine called: add_func_to_symbol_table");
+        String functionName = semanticStack.pop();
+        String functionBegin = semanticStack.pop();
+        assert functionBegin.equals("_FunctionBegin");
+
+        Symbol symbol = null;
+
+        try {
+            symbol = memoryHandler.findSymbol(functionName);
+        } catch (SymbolNotFoundException e) {
+            System.err.println("Function can not be found to add to previous table. Probably deleted it somewhere. check end.");
+        }
+
+        if (symbol == null) {
+            System.err.println("Something went wrong");
+        }
+
+        memoryHandler.endNewScope();
+
+        try {
+            memoryHandler.addFunc(functionName, symbol);
+        } catch (SymbolNameTakenException e) {
+            System.err.println("Function name already taken");
+        }
     }
 
     void arr_param() {
         System.out.println("Semantic routine called: arr_param");
+
+        String name = semanticStack.pop();
+        String type = semanticStack.pop();
+
+        String functionName = semanticStack.peek();
+        String functionBegin = semanticStack.get(semanticStack.size() - 2);
+        assert functionBegin.equals("_FunctionBegin");
+
+        if (type.equals("void")) {
+            // TODO: 6/21/19 Error
+            System.err.println("Function parameter can't be void");
+        }
+
+        try {
+            int address = memoryHandler.allocatePointer(name);
+            Symbol symbol = memoryHandler.findSymbol(functionName);
+            symbol.addArgument(SymbolType.Pointer, address);
+        } catch (SymbolNameTakenException e) {
+            // TODO: 6/21/19 Error
+            System.err.println("Array name already taken");
+        } catch (ArgumentWithoutFunction argumentWithoutFunction) {
+            argumentWithoutFunction.printStackTrace();
+        } catch (SymbolNotFoundException e) {
+            System.err.println("THIS SHOULD NOt BE Happening");
+            e.printStackTrace();
+        }
     }
 
     void var_param() {
         System.out.println("Semantic routine called: var_param");
+
+        String name = semanticStack.pop();
+        String type = semanticStack.pop();
+
+        String functionName = semanticStack.peek();
+        String functionBegin = semanticStack.get(semanticStack.size() - 2);
+        assert functionBegin.equals("_FunctionBegin");
+
+
+        if (type.equals("void")) {
+            // TODO: 6/21/19 Error
+            System.err.println("Function parameter can't be void");
+        }
+
+        try {
+            int address = memoryHandler.allocateVar(name);
+            Symbol symbol = memoryHandler.findSymbol(functionName);
+            symbol.addArgument(SymbolType.Pointer, address);
+        } catch (SymbolNameTakenException e) {
+            // TODO: 6/21/19 Error
+            System.err.println("Array name already taken");
+        } catch (ArgumentWithoutFunction argumentWithoutFunction) {
+            argumentWithoutFunction.printStackTrace();
+        } catch (SymbolNotFoundException e) {
+            System.err.println("THIS SHOULD NOt BE Happening 2");
+            e.printStackTrace();
+        }
     }
 
     void begin() {
+        // Check out for _FunctionBegin. if it is not on top of stack add new scope
+
+        String functionBegin = semanticStack.get(semanticStack.size() - 2);
+        if (functionBegin.equals("_FunctionBegin")){
+            // Do Nothing. Its all taken care of
+        }else{
+            memoryHandler.startNewScope();
+        }
+
         System.out.println("Semantic routine called: begin");
     }
 
     void end() {
+        // Check out for _FunctionBegin. if it is not on top of stack remove top scope
+
+        String functionBegin = semanticStack.get(semanticStack.size() - 2);
+        if (functionBegin.equals("_FunctionBegin")){
+            // Do Nothing. Its all taken care of
+        }else{
+            memoryHandler.endNewScope();
+        }
+
         System.out.println("Semantic routine called: end");
     }
 
     void continuez() {
         System.out.println("Semantic routine called: continue");
+        // TODO
     }
 
     void breakz() {
         System.out.println("Semantic routine called: break");
+        // TODO
     }
 
     void save() {
         System.out.println("Semantic routine called: save");
+
     }
 
     void jpf_save() {

@@ -2,6 +2,7 @@ package semantics.model;
 
 import semantics.exceptions.SymbolNameTakenException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SymbolTable {
@@ -13,6 +14,25 @@ public class SymbolTable {
         table.put(name, new Symbol(type, address));
     }
 
+    public void addVoidFunction(String name, int startAddress, int returnAddress) throws SymbolNameTakenException {
+        if (table.containsKey(name))
+            throw new SymbolNameTakenException(name);
+        table.put(name, new Symbol(startAddress, returnAddress));
+    }
+
+    public void addIntFunction(String name, int startAddress, int returnAddress, int returnValueAddress) throws SymbolNameTakenException {
+        if (table.containsKey(name))
+            throw new SymbolNameTakenException(name);
+        table.put(name, new Symbol(startAddress, returnAddress, returnValueAddress));
+    }
+
+    public void putFunction(String name, Symbol symbol) throws SymbolNameTakenException {
+        if(table.containsKey(name))
+            throw new SymbolNameTakenException(name);
+
+        table.put(name, symbol);
+    }
+
     public SymbolType getType(String name) {
         return table.get(name).getType();
     }
@@ -21,23 +41,10 @@ public class SymbolTable {
         return table.get(name) != null ? table.get(name).getAddress() : null;
     }
 
-
-    private class Symbol {
-        private SymbolType type;
-        private int address;
-        // TODO Add something here
-
-        Symbol(SymbolType type, int address) {
-            this.type = type;
-            this.address = address;
-        }
-
-        SymbolType getType() {
-            return type;
-        }
-
-        int getAddress() {
-            return address;
-        }
+    public Symbol getSymbol(String name) {
+        return table.get(name);
     }
+
+
 }
+

@@ -2,6 +2,7 @@ package semantics;
 
 import semantics.exceptions.SymbolNameTakenException;
 import semantics.exceptions.SymbolNotFoundException;
+import semantics.model.Symbol;
 import semantics.model.SymbolTable;
 import semantics.model.SymbolType;
 
@@ -13,27 +14,57 @@ class MemoryHandler {
     private Stack<SymbolTable> symbolTables = new Stack<>();
     private int memPointer = 500;
 
-    private static final int VAR_SIZE = 4;
+    public static final int VAR_SIZE = 4;
 
     MemoryHandler() {
         symbolTables.push(new SymbolTable());
     }
 
-    void allocateVar(String name) throws SymbolNameTakenException {
+    int allocateVar(String name) throws SymbolNameTakenException {
+        int address = memPointer;
         symbolTables.peek().addSymbol(name, Variable, memPointer);
         memPointer += VAR_SIZE;
+        return address;
     }
 
-    void allocateArray(String name, int size) throws SymbolNameTakenException {
-        symbolTables.peek().addSymbol(name, Array, memPointer);
+    int allocateArray(String name, int size) throws SymbolNameTakenException {
+        int address = memPointer;
+        symbolTables.peek().addSymbol(name, Pointer, memPointer);
+        memPointer += VAR_SIZE;
         memPointer += size * VAR_SIZE;
+        return address;
     }
 
-    void allocateFunc(String name, int args) throws SymbolNameTakenException {
-        // TODO Fix this (Get function type as input???)
-        SymbolType functionType = SymbolType.VOID_Function;
-        symbolTables.peek().addSymbol(name, functionType, memPointer);
-        memPointer += args * VAR_SIZE;
+    int allocatePointer(String name) throws SymbolNameTakenException {
+        int address = memPointer;
+        symbolTables.peek().addSymbol(name, Pointer, memPointer);
+        memPointer += VAR_SIZE;
+        return address;
+    }
+
+    int allocateFunc(String name, SymbolType type) throws SymbolNameTakenException {
+        int startAddress = memPointer;
+        memPointer += VAR_SIZE;
+        int returnAddress = memPointer;
+        memPointer += VAR_SIZE;
+
+
+        if (type == SymbolType.INT_Function) {
+            int returnValueAddress = memPointer;
+            memPointer += VAR_SIZE;
+            symbolTables.peek().addIntFunction(name, startAddress, returnAddress, returnValueAddress);
+        } else if (type == VOID_Function) {
+            symbolTables.peek().addVoidFunction(name, startAddress, returnAddress);
+        }
+
+
+        symbolTables.peek().addSymbol(name, type, memPointer);
+
+        return startAddress;
+    }
+
+    void addFunc(String name, Symbol funcSymbol) throws SymbolNameTakenException {
+        symbolTables.peek().putFunction(name, funcSymbol);
     }
 
     int getTemp() {
@@ -52,6 +83,16 @@ class MemoryHandler {
     int findAddress(String name) throws SymbolNotFoundException {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
             Integer address = symbolTables.get(i).getAddress(name);
+            if (address != null) {
+                return address;
+            }
+        }
+        throw new SymbolNotFoundException(name);
+    }
+
+    Symbol findSymbol(String name) throws SymbolNotFoundException {
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            Symbol address = symbolTables.get(i).getSymbol(name);
             if (address != null) {
                 return address;
             }
