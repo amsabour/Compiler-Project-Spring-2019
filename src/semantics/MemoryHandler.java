@@ -99,4 +99,12 @@ class MemoryHandler {
         }
         throw new SymbolNotFoundException(name);
     }
+
+    Symbol getCurrentFunction() {
+        SymbolTable current = symbolTables.peek();
+        String function = current.getFunction();
+        return current.getSymbol(function);
+    }
+
+
 }

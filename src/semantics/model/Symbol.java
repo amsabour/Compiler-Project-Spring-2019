@@ -8,12 +8,10 @@ public class Symbol {
     private SymbolType type;
     private int address;
 
-    private boolean isFunction = false;
     private ArrayList<SymbolType> argTypes;
     private ArrayList<Integer> argAddresses;
 
 
-    private boolean isVoid = false;
     private int returnValueAddress = -1;
     private int returnAddress = -1;
 
@@ -28,8 +26,6 @@ public class Symbol {
         // This is a temp each function has which must be filled when calling a function
         this.returnAddress = returnAddress;
 
-        this.isFunction = true;
-        this.isVoid = true;
     }
 
     Symbol(int address, int returnAddress, int returnValueAddress) {
@@ -44,8 +40,6 @@ public class Symbol {
 
         this.returnValueAddress = returnValueAddress;
 
-        this.isFunction = true;
-        this.isVoid = false;
     }
 
     Symbol(SymbolType type, int address) {
@@ -64,7 +58,7 @@ public class Symbol {
 
 
     public void addArgument(SymbolType type, int address) throws ArgumentWithoutFunction {
-        if (!isFunction)
+        if (!isFunction())
             throw new ArgumentWithoutFunction();
         if (type != SymbolType.Pointer && type != SymbolType.Variable) {
             System.err.println("WHAT THE FUCK IS HAPPENIGN?");
@@ -73,6 +67,32 @@ public class Symbol {
 
         argTypes.add(type);
         argAddresses.add(address);
+    }
+
+    public boolean isIntFunc() {
+        return this.type == SymbolType.INT_Function;
+    }
+
+    public boolean isVoidFunc() {
+        return this.type == SymbolType.VOID_Function;
+    }
+
+    public boolean isFunction() {
+        return isIntFunc() || isVoidFunc();
+    }
+
+    public int getReturnAddress() {
+        if (!isFunction())
+            throw new RuntimeException("Cannot get return address of non function symbol");
+
+        return returnAddress;
+    }
+
+    public int getReturnValueAddress() {
+        if (!isIntFunc())
+            throw new RuntimeException("Cannot get return value address of non function or non int function symbol");
+
+        return returnValueAddress;
     }
 }
 

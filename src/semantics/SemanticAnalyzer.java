@@ -46,7 +46,10 @@ public class SemanticAnalyzer {
     // the following methods are semantic routines
 
     void has_main() {
+        // TODO
         System.out.println("Semantic routine called: has_main");
+
+        System.out.println(programBlock);
     }
 
     void push(String input) {
@@ -225,9 +228,9 @@ public class SemanticAnalyzer {
         // Check out for _FunctionBegin. if it is not on top of stack add new scope
 
         String functionBegin = semanticStack.get(semanticStack.size() - 2);
-        if (functionBegin.equals("_FunctionBegin")){
+        if (functionBegin.equals("_FunctionBegin")) {
             // Do Nothing. Its all taken care of
-        }else{
+        } else {
             memoryHandler.startNewScope();
         }
 
@@ -238,9 +241,9 @@ public class SemanticAnalyzer {
         // Check out for _FunctionBegin. if it is not on top of stack remove top scope
 
         String functionBegin = semanticStack.get(semanticStack.size() - 2);
-        if (functionBegin.equals("_FunctionBegin")){
+        if (functionBegin.equals("_FunctionBegin")) {
             // Do Nothing. Its all taken care of
-        }else{
+        } else {
             memoryHandler.endNewScope();
         }
 
@@ -259,47 +262,126 @@ public class SemanticAnalyzer {
 
     void save() {
         System.out.println("Semantic routine called: save");
-
+        semanticStack.push("" + i);
+        programBlock.add(i, "EMPTY FOR NOW (SAVE)");
+        i = i + 1;
     }
 
     void jpf_save() {
         System.out.println("Semantic routine called: jpf_save");
+
+        int jpf_line = Integer.parseInt(semanticStack.pop());
+        String expression = semanticStack.pop();
+
+        programBlock.remove(jpf_line);
+        programBlock.add(jpf_line, "(JPF, " + expression + ", " + (i + 1) + ",)");
+
+        semanticStack.push("" + i);
+        programBlock.add(i, "EMPTY FOR NOW (SAVE)");
+        i = i + 1;
     }
 
     void jp() {
         System.out.println("Semantic routine called: jp");
+
+        int jp_line = Integer.parseInt(semanticStack.pop());
+        programBlock.remove(jp_line);
+        programBlock.add(jp_line, "(JP, " + i + ", , )");
     }
 
     void label() {
         System.out.println("Semantic routine called: label");
+        semanticStack.push("" + i);
     }
 
     void whilez() {
         System.out.println("Semantic routine called: while");
+
+        int jpf_line = Integer.parseInt(semanticStack.pop());
+        String expression = semanticStack.pop();
+        int loop_addr = Integer.parseInt(semanticStack.pop());
+
+        programBlock.add(i, "(JP, " + loop_addr + ",,)");
+        i = i + 1;
+
+
+        programBlock.remove(jpf_line);
+        programBlock.add(jpf_line, "(JPF, " + expression + ", " + i + ",)");
+
     }
 
     void return_void() {
         System.out.println("Semantic routine called: return_void");
+
+        Symbol function = memoryHandler.getCurrentFunction();
+        if (function == null) {
+            System.err.println("Return but outside of all functions");
+            return;
+        }
+
+
+        if (!function.isVoidFunc()) {
+            System.err.println("Return void inside non void function!!!!!!!!");
+            return;
+        }
+
+        int returnAddress = function.getReturnAddress();
+        programBlock.add(i, "(JP, @" + returnAddress + ",,)");
+        i = i + 1;
+
+        semanticStack.push("void");
     }
 
     void return_expr() {
         System.out.println("Semantic routine called: return_expr");
+
+        Symbol function = memoryHandler.getCurrentFunction();
+        if (function == null) {
+            System.err.println("Return but outside of all functions");
+            return;
+        }
+
+
+        if (!function.isIntFunc()) {
+            System.err.println("Return expression inside non int function!!!!!!!!");
+            return;
+        }
+
+
+        int returnAddress = function.getReturnAddress();
+        int returnValueAddress = function.getReturnValueAddress();
+
+        String expression = semanticStack.pop();
+        programBlock.add(i, "(ASSIGN, " + expression + ", " + returnValueAddress + ", )");
+        i = i + 1;
+        programBlock.add(i, "(JP, @" + returnAddress + ",,)");
+        i = i + 1;
+
+        semanticStack.push("" + returnValueAddress);
     }
 
     void switchz() {
         System.out.println("Semantic routine called: switch");
+        programBlock.add(i, "(JP, " + (i + 2) + ", ,)");
+        i = i + 1;
+        programBlock.add(i, "EMPTY FOR NOW");
+        semanticStack.push("" + i);
+        i = i + 1;
     }
 
     void start_scope_breakable() {
+        // TODO
         System.out.println("Semantic routine called: start_scope_breakable");
     }
 
     void end_scope() {
+        // TODO
         System.out.println("Semantic routine called: end_scope");
     }
 
     void pop() {
         System.out.println("Semantic routine called: pop");
+
     }
 
     void cmp() {
