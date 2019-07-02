@@ -6,7 +6,6 @@ import semantics.exceptions.SymbolNotFoundException;
 import semantics.model.Symbol;
 import semantics.model.SymbolType;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -19,14 +18,129 @@ public class SemanticAnalyzer {
     private int i = 0;
 
     public void callRoutine(String name, String input) {
-        try {
-            if (name.equals("push") || name.equals("pid"))
-                getClass().getDeclaredMethod(name, String.class).invoke(this, input);
-            else
-                getClass().getDeclaredMethod(name).invoke(this);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            e.printStackTrace();
+
+        switch (name) {
+            case "push":
+                push(input);
+                break;
+            case "push_num":
+                push_num(input);
+                break;
+            case "pid":
+                pid(input);
+                break;
+            case "has_main":
+                has_main();
+                break;
+            case "var_dec":
+                var_dec();
+                break;
+            case "arr_dec":
+                arr_dec();
+                break;
+            case "func_dec_begin":
+                func_dec_begin();
+                break;
+            case "func_dec_end":
+                func_dec_end();
+                break;
+            case "add_func_to_symbol_table":
+                add_func_to_symbol_table();
+                break;
+            case "var_param":
+                var_param();
+                break;
+            case "arr_param":
+                arr_param();
+                break;
+            case "begin":
+                begin();
+                break;
+            case "end":
+                end();
+                break;
+            case "continuez":
+                continuez();
+                break;
+            case "breakz":
+                breakz();
+                break;
+            case "save":
+                save();
+                break;
+            case "jpf_save":
+                jpf_save();
+                break;
+            case "jp":
+                jp();
+                break;
+            case "label":
+                label();
+                break;
+            case "whilez":
+                whilez();
+                break;
+            case "return_void":
+                return_void();
+                break;
+            case "return_expr":
+                return_expr();
+                break;
+            case "switchz":
+                switchz();
+                break;
+            case "start_scope_breakable":
+                start_scope_breakable();
+                break;
+            case "end_scope":
+                end_scope();
+                break;
+            case "pop":
+                pop();
+                break;
+            case "cmp":
+                cmp();
+                break;
+            case "jpf":
+                jpf();
+                break;
+            case "update_addr":
+                update_addr();
+                break;
+            case "calc":
+                calc();
+                break;
+            case "push_minusone_mult":
+                push_minusone_mult();
+                break;
+            case "get_arr_element":
+                get_arr_element();
+                break;
+            case "start_set_param":
+                start_set_param();
+                break;
+            case "end_set_param":
+                end_set_param();
+                break;
+            case "call":
+                call();
+                break;
+            case "set_param":
+                set_param();
+                break;
+            case "assign":
+                assign();
+                break;
         }
+
+//        try {
+//            if (name.equals("push") || name.equals("pid"))
+//                getClass().getDeclaredMethod(name, String.class).invoke(this, input);
+//            else
+//                getClass().getDeclaredMethod(name).invoke(this);
+//        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private String ss(int fromTop) {
@@ -57,9 +171,15 @@ public class SemanticAnalyzer {
         semanticStack.push(input);
     }
 
+    void push_num(String input) {
+        System.out.println("Semantic routine called: push_num");
+        semanticStack.push("#" + input);
+    }
+
     void var_dec() {
-        String name = semanticStack.pop();
-        String type = semanticStack.pop();
+        String name = ss(0);
+        String type = ss(1);
+        pop(2);
         if (type.equals("void")) {
             // TODO: 6/21/19 Error
             System.err.println("Var type is void");
@@ -74,7 +194,7 @@ public class SemanticAnalyzer {
     }
 
     void arr_dec() {
-        int size = Integer.parseInt(semanticStack.pop());
+        int size = Integer.parseInt(semanticStack.pop().substring(1));
         String name = semanticStack.pop();
         String type = semanticStack.pop();
         if (type.equals("void")) {
@@ -122,7 +242,7 @@ public class SemanticAnalyzer {
         memoryHandler.startNewScope();
 
         try {
-            memoryHandler.allocateFunc(funcName, type);
+            memoryHandler.allocateFunc(funcName, type, i);
         } catch (SymbolNameTakenException e) {
             System.err.println("Function name already taken");
         }
@@ -212,7 +332,7 @@ public class SemanticAnalyzer {
         try {
             int address = memoryHandler.allocateVar(name);
             Symbol symbol = memoryHandler.findSymbol(functionName);
-            symbol.addArgument(SymbolType.Pointer, address);
+            symbol.addArgument(SymbolType.Variable, address);
         } catch (SymbolNameTakenException e) {
             // TODO: 6/21/19 Error
             System.err.println("Array name already taken");
@@ -252,7 +372,10 @@ public class SemanticAnalyzer {
 
     void continuez() {
         System.out.println("Semantic routine called: continue");
-        // TODO
+
+        String label = ss(2);
+        programBlock.add(i, "(JP, " + label + ",,)");
+        i = i + 1;
     }
 
     void breakz() {
@@ -381,7 +504,7 @@ public class SemanticAnalyzer {
 
     void pop() {
         System.out.println("Semantic routine called: pop");
-
+        semanticStack.pop();
     }
 
     void cmp() {
@@ -422,7 +545,6 @@ public class SemanticAnalyzer {
         int t = memoryHandler.getTemp();
         programBlock.add(i, "(" + command + "," + first + "," + second + "," + t + ")");
         i++;
-        pop(3);
         semanticStack.push("" + t);
     }
 
@@ -483,6 +605,7 @@ public class SemanticAnalyzer {
     void assign() {
         System.out.println("Semantic routine called: assign");
         programBlock.add(i, "(ASSIGN," + ss(0) + "," + ss(1) + ",)");
+        pop(2);
         i++;
     }
 

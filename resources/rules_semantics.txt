@@ -3,14 +3,14 @@ Declaration-list -> Declaration Declaration-list
 Declaration-list -> eps
 Declaration -> #push Type-specifier #push id Declaration-2
 Declaration-2 -> #var_dec ;
-Declaration-2 -> [ #push num ] #arr_dec ;
+Declaration-2 -> [ #push_num num ] #arr_dec ;
 Declaration-2 -> #func_dec_begin ( Params ) #func_dec_end Compound-stmt #add_func_to_symbol_table
 Type-specifier -> int
 Type-specifier -> void
 Params -> #push int #push id Param-2 Params-list-2
 Params -> #push void Params-2
 Params-2 -> #push id Param-2 Params-list-2
-Params-2 -> eps
+Params-2 -> #pop
 Params-list -> Param Params-list-2
 Params-list-2 -> , Params-list
 Params-list-2 -> eps
@@ -35,10 +35,10 @@ Iteration-stmt -> while #label ( Expression ) #save Statement #whilez
 Return-stmt -> return Return-stmt-2
 Return-stmt-2 -> #return_void ;
 Return-stmt-2 -> Expression #return_expr ;
-Switch-stmt -> switSemanticAnalyzerch #switchz ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
+Switch-stmt -> switch #switchz ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
 Case-stmts -> Case-stmt Case-stmts
 Case-stmts -> eps
-Case-stmt -> case #push #cmp num #save : Statement-list #jpf
+Case-stmt -> case #push_num #cmp num #save : Statement-list #jpf
 Default-stmt -> default : Statement-list
 Default-stmt -> eps
 TODO Var never used!
@@ -63,7 +63,7 @@ Signed-Factor -> Factor
 Signed-Factor -> + Factor
 Signed-Factor -> #push_minusone_mult - Factor #calc
 Factor -> ( Expression )
-Factor -> #push num
+Factor -> #push_num num
 Factor -> #pid id Factor-2
 Factor-2 -> [ Expression ] #get_arr_element
 Factor-2 -> ( #start_set_param Args #end_set_param ) #call
@@ -76,8 +76,8 @@ Arg-list-2 -> eps
 Expression -> #push + Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> #push - Factor Term-2 Additive-expression-2 Simple-expression-2
 Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2
-Expression -> #push num Term-2 Additive-expression-2 Simple-expression-2
-Expression -> #push #pid id Expression-2
+Expression -> #push_num num Term-2 Additive-expression-2 Simple-expression-2
+Expression -> #pid id Expression-2
 Expression-2 -> [ Expression ] #get_arr_element Expression-3
 Expression-2 -> Expression-3
 Expression-2 -> ( #start_set_param Args #end_set_param ) #call Term-2 Additive-expression-2 Simple-expression-2

@@ -42,9 +42,8 @@ class MemoryHandler {
         return address;
     }
 
-    int allocateFunc(String name, SymbolType type) throws SymbolNameTakenException {
-        int startAddress = memPointer;
-        memPointer += VAR_SIZE;
+    int allocateFunc(String name, SymbolType type, int startLine) throws SymbolNameTakenException {
+        int startAddress = startLine;
         int returnAddress = memPointer;
         memPointer += VAR_SIZE;
 
@@ -56,9 +55,6 @@ class MemoryHandler {
         } else if (type == VOID_Function) {
             symbolTables.peek().addVoidFunction(name, startAddress, returnAddress);
         }
-
-
-        symbolTables.peek().addSymbol(name, type, memPointer);
 
         return startAddress;
     }
