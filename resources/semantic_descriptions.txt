@@ -48,7 +48,7 @@ TODO (Shouldn't these have a fixed address???)
 
 
 
-#switchz : PB[i] = (jp, i+2) , i = i + 1, push(i) (To be filled with unconditional jump to after switch incase of break), i = i + 1
+#apply_break_address : PB[i] = (jp, i+2) , i = i + 1, push(i) (To be filled with unconditional jump to after switch incase of break), i = i + 1
 
 
 #calc: t = temp() PB[i] = (ss[top - 1], ss[top], ss[top - 2], t), pop(3), push(t), i = i + 1 (result of arithmetic operation in t)

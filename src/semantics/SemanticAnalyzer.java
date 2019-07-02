@@ -86,11 +86,14 @@ public class SemanticAnalyzer {
             case "return_expr":
                 return_expr();
                 break;
-            case "switchz":
-                switchz();
+            case "apply_break_address":
+                apply_break_address();
                 break;
             case "start_scope_breakable":
                 start_scope_breakable();
+                break;
+            case "start_scope_breakable_2":
+                start_scope_breakable_2();
                 break;
             case "end_scope_breakable":
                 end_scope_breakable();
@@ -384,7 +387,6 @@ public class SemanticAnalyzer {
     void breakz() {
         System.out.println("Semantic routine called: break");
 
-        // TODO Breaks dont work in while loops yet
 
         if (!memoryHandler.isInBreakableScope()) {
             // TODO: 6/28/19 Error
@@ -496,7 +498,7 @@ public class SemanticAnalyzer {
         semanticStack.push("" + returnValueAddress);
     }
 
-    void switchz() {
+    void apply_break_address() {
         System.out.println("Semantic routine called: switch");
         programBlock.add(i, "(JP, " + (i + 2) + ", ,)");
         i = i + 1;
@@ -509,6 +511,13 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: start_scope_breakable");
 
         int breakAddress = Integer.parseInt(ss(1));
+        memoryHandler.startBreakableScope(breakAddress);
+    }
+
+    void start_scope_breakable_2() {
+        System.out.println("Semantic routine called: start_scope_breakable_2");
+
+        int breakAddress = Integer.parseInt(ss(3));
         memoryHandler.startBreakableScope(breakAddress);
     }
 

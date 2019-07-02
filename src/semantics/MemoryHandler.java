@@ -77,11 +77,22 @@ class MemoryHandler {
     }
 
     boolean isInBreakableScope() {
-        return symbolTables.peek().isBreakable();
+        boolean result = false;
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            result |= symbolTables.get(i).isBreakable();
+        }
+        return result;
     }
 
-    int getScopeBreakAddress(){
+    int getScopeBreakAddress() {
         assert isInBreakableScope();
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            if (symbolTables.get(i).isBreakable()) {
+                return symbolTables.get(i).getBreakAddress();
+            }
+        }
+
+        System.err.println("THIS POINT MUST NEVER REACHHHH");
         return symbolTables.peek().getBreakAddress();
     }
 
