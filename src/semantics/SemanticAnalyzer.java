@@ -172,8 +172,7 @@ public class SemanticAnalyzer {
         programBlock.add(jp_to_main, "(JP, " + main.getAddress() + ",,)");
 
         for (int i = 0; i < programBlock.size(); i++) {
-            String s = programBlock.get(i);
-            System.out.println("" + i + ": " + s);
+            OutputHandler.getInstance().printCode(programBlock.get(i), i);
         }
     }
 

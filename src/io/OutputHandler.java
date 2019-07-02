@@ -53,7 +53,7 @@ public class OutputHandler implements Closeable {
         if (!outputDirectory.exists())
             outputDirectory.mkdir();
         try {
-            codeFormatter = new Formatter(new FileOutputStream("output/code.txt"));
+            codeFormatter = new Formatter(new FileOutputStream("output/output.txt"));
             parserFormatter = new Formatter(new FileOutputStream("output/parser.txt"));
             lexerFormatter = new Formatter(new FileOutputStream("output/scanner.txt"));
             errorFormatter = new Formatter(new FileOutputStream("output/error.txt"));
