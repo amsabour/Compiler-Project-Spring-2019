@@ -12,6 +12,9 @@ public class SemanticAnalyzer {
     private Stack<String> semanticStack = new Stack<>();
     private ArrayList<String> programBlock = new ArrayList<>();
 
+
+    private int outputParam = -1;
+
     // Program counter
     private int i = 0;
 
@@ -474,7 +477,7 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(JP, @" + returnAddress + ",,)");
         i = i + 1;
 
-        semanticStack.push("void");
+//        semanticStack.push("void");
     }
 
     void return_expr() {
@@ -614,7 +617,11 @@ public class SemanticAnalyzer {
     void pid(String input) {
         System.out.println("Semantic routine called: pid");
         try {
-            semanticStack.push("" + memoryHandler.findAddress(input));
+            if (!input.equals("output")) {
+                semanticStack.push("" + memoryHandler.findAddress(input));
+            } else {
+                semanticStack.push(input);
+            }
         } catch (SymbolNotFoundException e) {
             // TODO: 6/28/19 Error
             System.err.println("Symbol Not found");
@@ -648,6 +655,14 @@ public class SemanticAnalyzer {
     void end_set_param() {
         System.out.println("Semantic routine called: end_set_param");
 
+        if (ss(1).equals("output")) {
+            if (outputParam == -1) {
+                System.err.println("Output function needs atleast one parameter(Only last one is kept)");
+            }
+            pop(1);
+            return;
+        }
+
         int argumentNumbers = Integer.parseInt(semanticStack.pop());
         int functionStartAddress = Integer.parseInt(semanticStack.peek());
         try {
@@ -666,6 +681,15 @@ public class SemanticAnalyzer {
     void call() {
         System.out.println("Semantic routine called: call");
 
+        if (semanticStack.peek().equals("output")) {
+            pop(1);
+            programBlock.add(i, "(PRINT, " + outputParam + ", , )");
+            i = i + 1;
+            outputParam = -1;
+            semanticStack.push("void");
+            return;
+        }
+
         int startAddress = Integer.parseInt(semanticStack.pop());
         try {
             Symbol function = memoryHandler.getFunctionByStartAddress(startAddress);
@@ -678,20 +702,23 @@ public class SemanticAnalyzer {
 
             if (function.isIntFunc()) {
                 semanticStack.push("" + function.getReturnValueAddress());
+            } else if (function.isVoidFunc()) {
+                semanticStack.push("void");
             }
 
         } catch (FunctionNotFoundException e) {
             System.err.println("YOu can never reach me :)))))))))))))");
         }
-
-
-//         TODO: 6/28/19 Implement getFunctionAddressByName to find address location in program block
-//        programBlock.add(i, "(JP," + memoryHandler.getFunctionAddressByName(ss(1)));
-//        i++;
     }
 
     void set_param() {
         System.out.println("Semantic routine called: set_param");
+
+        if (ss(2).equals("output")) {
+            outputParam = Integer.parseInt(semanticStack.pop());
+            return;
+        }
+
         int functionStartAddress = Integer.parseInt(ss(2));
         int argumentNumber = Integer.parseInt(ss(1));
 
