@@ -11,6 +11,9 @@ public class SymbolTable {
     private boolean breakable = false;
     private int breakAddress = -1;
 
+    private boolean continuable = false;
+    private int startAddres = -1;
+
     public SymbolTable() {
 
     }
@@ -18,6 +21,14 @@ public class SymbolTable {
     public SymbolTable(int breakAddress) {
         this.breakable = true;
         this.breakAddress = breakAddress;
+    }
+
+
+    public SymbolTable(int breakAddress, int startAddress) {
+        this.breakable = true;
+        this.breakAddress = breakAddress;
+        this.continuable = true;
+        this.startAddres = startAddress;
     }
 
 
@@ -74,6 +85,11 @@ public class SymbolTable {
         return this.functionName;
     }
 
+
+    public boolean isContinuable() {
+        return continuable;
+    }
+
     public boolean isBreakable() {
         return breakable;
     }
@@ -81,6 +97,11 @@ public class SymbolTable {
     public int getBreakAddress() {
         return breakAddress;
     }
+
+    public int getContinueAddres() {
+        return startAddres;
+    }
+
 
     public Symbol getFunctionByAddress(int startAddress) {
         for (Symbol symbol : table.values()) {
@@ -91,6 +112,15 @@ public class SymbolTable {
         return null;
     }
 
+    public String getFunctionNameByAddress(int startAddress) {
+        for (String str : table.keySet()) {
+            Symbol symbol = table.get(str);
+            if (symbol.isFunction() && symbol.getAddress() == startAddress) {
+                return str;
+            }
+        }
+        return null;
+    }
 
 
 }

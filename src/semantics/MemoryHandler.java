@@ -77,6 +77,10 @@ class MemoryHandler {
         symbolTables.add(new SymbolTable(breakAddress));
     }
 
+    void startBreakableScope(int breakAddress, int atartAddress) {
+        symbolTables.add(new SymbolTable(breakAddress, atartAddress));
+    }
+
     boolean isInBreakableScope() {
         boolean result = false;
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
@@ -84,6 +88,27 @@ class MemoryHandler {
         }
         return result;
     }
+
+    boolean isInContinuableScope() {
+        boolean result = false;
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            result |= symbolTables.get(i).isContinuable();
+        }
+        return result;
+    }
+
+    int getScopeContinueAddress() {
+        assert isInContinuableScope();
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            if (symbolTables.get(i).isContinuable()) {
+                return symbolTables.get(i).getContinueAddres();
+            }
+        }
+
+        System.err.println("THIS POINT MUST NEVER REACHHHH");
+        return symbolTables.peek().getContinueAddres();
+    }
+
 
     int getScopeBreakAddress() {
         assert isInBreakableScope();
@@ -121,6 +146,17 @@ class MemoryHandler {
         throw new FunctionNotFoundException(startAddress);
     }
 
+    String getFunctionNameByStartAddress(int startAddress) throws FunctionNotFoundException {
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            String function = symbolTables.get(i).getFunctionNameByAddress(startAddress);
+            if (function != null) {
+                return function;
+            }
+        }
+        throw new FunctionNotFoundException(startAddress);
+    }
+
+
     Symbol findSymbol(String name) throws SymbolNotFoundException {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
             Symbol address = symbolTables.get(i).getSymbol(name);
@@ -147,7 +183,7 @@ class MemoryHandler {
         return null;
     }
 
-    int getSymbolTableCount(){
+    int getSymbolTableCount() {
         return symbolTables.size();
     }
 

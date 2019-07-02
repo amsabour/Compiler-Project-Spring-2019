@@ -11,16 +11,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static io.Error.ErrorType;
-import static io.Error.ErrorType.LexicalError;
-import static io.Error.ErrorType.SyntaxError;
+import static io.Error.ErrorType.*;
 
 public class OutputHandler implements Closeable {
+    private Formatter codeFormatter;
     private Formatter parserFormatter;
     private Formatter lexerFormatter;
     private Formatter errorFormatter;
 
     private HashMap<String, String> nonTerminalDescriptions = new HashMap<>();
 
+    private ArrayList<Error> semanticErrorBuffer;
     private ArrayList<Error> errorBuffer;
     private ArrayList<Token> tokenBuffer;
     private int errorLineNumber;
@@ -30,6 +31,7 @@ public class OutputHandler implements Closeable {
 
     private OutputHandler() {
         errorBuffer = new ArrayList<>();
+        semanticErrorBuffer = new ArrayList<>();
         tokenBuffer = new ArrayList<>();
         errorLineNumber = 1;
         lexerLineNumber = 1;
@@ -51,6 +53,7 @@ public class OutputHandler implements Closeable {
         if (!outputDirectory.exists())
             outputDirectory.mkdir();
         try {
+            codeFormatter = new Formatter(new FileOutputStream("output/code.txt"));
             parserFormatter = new Formatter(new FileOutputStream("output/parser.txt"));
             lexerFormatter = new Formatter(new FileOutputStream("output/scanner.txt"));
             errorFormatter = new Formatter(new FileOutputStream("output/error.txt"));
@@ -64,6 +67,10 @@ public class OutputHandler implements Closeable {
             instance = new OutputHandler();
         }
         return instance;
+    }
+
+    public void printCode(String code, int lineNo) {
+        codeFormatter.format("" + lineNo + "\t" + code + "\n");
     }
 
     public void printParser(String state, int depth) {
@@ -103,13 +110,45 @@ public class OutputHandler implements Closeable {
 //        errorFormatter.format(lineNumber + ": Syntax Error! " + errorType + "\n");
     }
 
+    public void printMainNotFoundError(){
+        addToSemanticErrorBuffer("main function not found!!");
+    }
+
+    public void printTypeMismatchError() {
+        addToSemanticErrorBuffer("Type mismatch in operands.");
+    }
+
+    public void printBreakError() {
+        addToSemanticErrorBuffer("No 'while' or 'switch' found for 'break'");
+    }
+
+    public void printContinueError() {
+        addToSemanticErrorBuffer("No 'while' found for 'continue'");
+    }
+
+    public void printArgMismatchError(String functionName) {
+        addToSemanticErrorBuffer("Mismatch in number of arguments in '" + functionName + "'");
+    }
+
+    public void printIllegalTypeError(String id) {
+        addToSemanticErrorBuffer("Illegal type of void");
+    }
+
+    public void printScopingError(String id) {
+        addToSemanticErrorBuffer("'" + id + "' is not defined.");
+    }
+
+    private void addToSemanticErrorBuffer(String error) {
+        semanticErrorBuffer.add(new Error(error, SemanticError));
+    }
+
     private void addToErrorBuffer(String error, ErrorType type) {
         errorBuffer.add(new Error(error, type));
     }
 
     private void flushIfNewErrorLine(int lineNumber) {
         if (lineNumber > errorLineNumber) {
-            flushErrorBuffer();
+            flushErrorBuffers();
             errorLineNumber = lineNumber;
         }
     }
@@ -121,7 +160,7 @@ public class OutputHandler implements Closeable {
         }
     }
 
-    public void flushErrorBuffer() {
+    public void flushErrorBuffers() {
         ArrayList<String> lexErrors = new ArrayList<>();
         ArrayList<String> syntaxErrors = new ArrayList<>();
 
@@ -149,6 +188,18 @@ public class OutputHandler implements Closeable {
         }
 
         errorBuffer.clear();
+
+        if (semanticErrorBuffer.isEmpty())
+            return;
+
+
+        errorFormatter.format("\n----------------------\n\n");
+
+        for (Error err : semanticErrorBuffer) {
+            errorFormatter.format(err.getMessage() + "\n");
+        }
+
+        semanticErrorBuffer.clear();
     }
 
     private void flushLexerBuffer() {
@@ -171,6 +222,7 @@ public class OutputHandler implements Closeable {
 
     @Override
     public void close() {
+        codeFormatter.close();
         parserFormatter.close();
         lexerFormatter.close();
         errorFormatter.close();

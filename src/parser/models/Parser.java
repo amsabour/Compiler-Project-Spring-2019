@@ -140,7 +140,7 @@ public class Parser {
         } catch (EOFException ignored) {
             // Encountered EOFException. Stopping parse.
         } finally {
-            OutputHandler.getInstance().flushErrorBuffer();
+            OutputHandler.getInstance().flushErrorBuffers();
         }
     }
 

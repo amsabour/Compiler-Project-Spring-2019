@@ -19,6 +19,7 @@ class Error {
 
     enum ErrorType {
         LexicalError,
-        SyntaxError
+        SyntaxError,
+        SemanticError
     }
 }

@@ -1,5 +1,6 @@
 package semantics;
 
+import io.OutputHandler;
 import semantics.exceptions.*;
 import semantics.model.Symbol;
 import semantics.model.SymbolType;
@@ -13,7 +14,7 @@ public class SemanticAnalyzer {
     private ArrayList<String> programBlock = new ArrayList<>();
 
 
-    private int outputParam = -1;
+    private String outputParam = null;
 
     // Program counter
     private int i = 0;
@@ -136,7 +137,6 @@ public class SemanticAnalyzer {
                 assign();
                 break;
         }
-
     }
 
     private String ss(int fromTop) {
@@ -163,7 +163,7 @@ public class SemanticAnalyzer {
         Symbol main = memoryHandler.getFunctionByName("main");
 
         if (main == null || !main.isVoidFunc() || main.getArgCount() != 0) {
-            System.err.println("main function not found!!!");
+            OutputHandler.getInstance().printMainNotFoundError();
             return;
         }
 
@@ -193,7 +193,8 @@ public class SemanticAnalyzer {
         pop(2);
         if (type.equals("void")) {
             // TODO: 6/21/19 Error
-            System.err.println("Var type is void");
+            OutputHandler.getInstance().printIllegalTypeError(name);
+//            System.err.println("Var type is void");
         }
         try {
             memoryHandler.allocateVar(name);
@@ -210,7 +211,8 @@ public class SemanticAnalyzer {
         String type = semanticStack.pop();
         if (type.equals("void")) {
             // TODO: 6/21/19 Error
-            System.err.println("Array type is void");
+            OutputHandler.getInstance().printIllegalTypeError(name);
+//            System.err.println("Array type is void");
         }
         try {
             memoryHandler.allocateArray(name, size);
@@ -389,9 +391,14 @@ public class SemanticAnalyzer {
     void continuez() {
         System.out.println("Semantic routine called: continue");
 
-        String label = ss(2);
-        programBlock.add(i, "(JP, " + label + ",,)");
-        i = i + 1;
+        if (!memoryHandler.isInContinuableScope()) {
+            // TODO: 6/28/19 Error
+            OutputHandler.getInstance().printContinueError();
+        } else {
+            int continueAddress = memoryHandler.getScopeContinueAddress();
+            programBlock.add(i, "(JP, " + continueAddress + ",,)");
+            i = i + 1;
+        }
     }
 
     void breakz() {
@@ -400,7 +407,7 @@ public class SemanticAnalyzer {
 
         if (!memoryHandler.isInBreakableScope()) {
             // TODO: 6/28/19 Error
-            System.err.println("break not inside of breakable scope");
+            OutputHandler.getInstance().printBreakError();
         } else {
             int breakAddress = memoryHandler.getScopeBreakAddress();
             programBlock.add(i, "(JP, " + breakAddress + ",,)");
@@ -477,7 +484,6 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(JP, @" + returnAddress + ",,)");
         i = i + 1;
 
-//        semanticStack.push("void");
     }
 
     void return_expr() {
@@ -528,7 +534,8 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: start_scope_breakable_2");
 
         int breakAddress = Integer.parseInt(ss(3));
-        memoryHandler.startBreakableScope(breakAddress);
+        int startAddress = Integer.parseInt(ss(2));
+        memoryHandler.startBreakableScope(breakAddress, startAddress);
     }
 
     void end_scope_breakable() {
@@ -602,6 +609,11 @@ public class SemanticAnalyzer {
                 command = "EQ";
                 break;
         }
+
+        if (first.equals("void") || second.equals("void")) {
+            OutputHandler.getInstance().printTypeMismatchError();
+        }
+
         int t = memoryHandler.getTemp();
         programBlock.add(i, "(" + command + "," + first + "," + second + "," + t + ")");
         i++;
@@ -623,24 +635,33 @@ public class SemanticAnalyzer {
                 semanticStack.push(input);
             }
         } catch (SymbolNotFoundException e) {
-            // TODO: 6/28/19 Error
-            System.err.println("Symbol Not found");
+            OutputHandler.getInstance().printScopingError(input);
+//            System.err.println("Symbol Not found");
         }
     }
 
+
     void get_arr_element() {
+        //TODO HERE
         System.out.println("Semantic routine called: get_arr_element");
         int t = memoryHandler.getTemp();
+
+        String operand1 = ss(0);
         programBlock.add(i, "(MULT, " + ss(0) + ", #4, " + t + ")");
         i = i + 1;
 
         int t2 = memoryHandler.getTemp();
+        String operand2 = ss(1);
         programBlock.add(i, "(ADD," + ss(1) + "," + t + "," + t2 + ")");
         i++;
 
         int t3 = memoryHandler.getTemp();
         programBlock.add(i, "(ASSIGN, @" + t2 + ", " + t3 + ",)");
         i = i + 1;
+
+        if (operand1.equals("void") || operand2.equals("void")) {
+            OutputHandler.getInstance().printTypeMismatchError();
+        }
 
         pop(2);
         semanticStack.push("" + t3);
@@ -656,7 +677,7 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: end_set_param");
 
         if (ss(1).equals("output")) {
-            if (outputParam == -1) {
+            if (outputParam == null) {
                 System.err.println("Output function needs atleast one parameter(Only last one is kept)");
             }
             pop(1);
@@ -665,14 +686,20 @@ public class SemanticAnalyzer {
 
         int argumentNumbers = Integer.parseInt(semanticStack.pop());
         int functionStartAddress = Integer.parseInt(semanticStack.peek());
+
+        String functionName = null;
         try {
+            functionName = memoryHandler.getFunctionNameByStartAddress(functionStartAddress);
             Symbol function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
+
             if (argumentNumbers != function.getArgCount()) {
-                // TODO Fix this to function name as well
-                System.err.println("Mismatch in number of arguments of " + function.getAddress());
+                OutputHandler.getInstance().printArgMismatchError(functionName);
             }
         } catch (FunctionNotFoundException e) {
-            System.err.println("Your function does not exist. ....");
+//            System.err.println("Your function does not exist. ....");
+            // TODO TEST THIS. Using an undefined func
+            OutputHandler.getInstance().printScopingError(functionName);
+
         }
 
 
@@ -685,7 +712,7 @@ public class SemanticAnalyzer {
             pop(1);
             programBlock.add(i, "(PRINT, " + outputParam + ", , )");
             i = i + 1;
-            outputParam = -1;
+            outputParam = null;
             semanticStack.push("void");
             return;
         }
@@ -715,7 +742,7 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: set_param");
 
         if (ss(2).equals("output")) {
-            outputParam = Integer.parseInt(semanticStack.pop());
+            outputParam = semanticStack.pop();
             return;
         }
 
@@ -723,9 +750,12 @@ public class SemanticAnalyzer {
         int argumentNumber = Integer.parseInt(ss(1));
 
         Symbol function = null;
+        String functionName = null;
         try {
             function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
+            functionName = memoryHandler.getFunctionNameByStartAddress(functionStartAddress);
             int paramAddress = function.getArgAddress(argumentNumber);
+
 
             programBlock.add(i, "(ASSIGN," + ss(0) + "," + paramAddress + ",)");
             i++;
@@ -735,8 +765,8 @@ public class SemanticAnalyzer {
         } catch (FunctionNotFoundException e) {
             System.err.println("Function used cannot be found!!!!");
         } catch (TooMuchArgumentsException e) {
-            // TODO Fix this and replace it with function name
-            System.err.println("Mismatch in number of arguments of " + function.getAddress());
+            OutputHandler.getInstance().printArgMismatchError(functionName);
+            pop(1);
         }
     }
 
