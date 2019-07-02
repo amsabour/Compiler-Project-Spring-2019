@@ -1,5 +1,6 @@
 package semantics;
 
+import semantics.exceptions.FunctionNotFoundException;
 import semantics.exceptions.SymbolNameTakenException;
 import semantics.exceptions.SymbolNotFoundException;
 import semantics.model.Symbol;
@@ -110,6 +111,16 @@ class MemoryHandler {
         throw new SymbolNotFoundException(name);
     }
 
+    Symbol getFunctionByStartAddress(int startAddress) throws FunctionNotFoundException {
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            Symbol function = symbolTables.get(i).getFunctionByAddress(startAddress);
+            if (function != null) {
+                return function;
+            }
+        }
+        throw new FunctionNotFoundException(startAddress);
+    }
+
     Symbol findSymbol(String name) throws SymbolNotFoundException {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
             Symbol address = symbolTables.get(i).getSymbol(name);
@@ -124,6 +135,20 @@ class MemoryHandler {
         SymbolTable current = symbolTables.peek();
         String function = current.getFunction();
         return current.getSymbol(function);
+    }
+
+    Symbol getFunctionByName(String name) {
+        for (int i = symbolTables.size() - 1; i >= 0; i--) {
+            Symbol symbol = symbolTables.get(i).getSymbol(name);
+            if (symbol != null) {
+                return symbol;
+            }
+        }
+        return null;
+    }
+
+    int getSymbolTableCount(){
+        return symbolTables.size();
     }
 
 

@@ -82,5 +82,16 @@ public class SymbolTable {
         return breakAddress;
     }
 
+    public Symbol getFunctionByAddress(int startAddress) {
+        for (Symbol symbol : table.values()) {
+            if (symbol.isFunction() && symbol.getAddress() == startAddress) {
+                return symbol;
+            }
+        }
+        return null;
+    }
+
+
+
 }
 

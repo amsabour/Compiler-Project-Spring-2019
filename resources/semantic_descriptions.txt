@@ -1,4 +1,4 @@
-#has_main: check if void main(void) is defined in the global scope
+#has_main: check if void main(void) is defined in the global scope. And fill in first jump to the first line of main
 
 #push: push the next TYPE, ID, NUM, onto the stack
 

@@ -1,8 +1,6 @@
 package semantics;
 
-import semantics.exceptions.ArgumentWithoutFunction;
-import semantics.exceptions.SymbolNameTakenException;
-import semantics.exceptions.SymbolNotFoundException;
+import semantics.exceptions.*;
 import semantics.model.Symbol;
 import semantics.model.SymbolType;
 
@@ -136,14 +134,6 @@ public class SemanticAnalyzer {
                 break;
         }
 
-//        try {
-//            if (name.equals("push") || name.equals("pid"))
-//                getClass().getDeclaredMethod(name, String.class).invoke(this, input);
-//            else
-//                getClass().getDeclaredMethod(name).invoke(this);
-//        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-//            e.printStackTrace();
-//        }
     }
 
     private String ss(int fromTop) {
@@ -163,8 +153,20 @@ public class SemanticAnalyzer {
     // the following methods are semantic routines
 
     void has_main() {
-        // TODO
         System.out.println("Semantic routine called: has_main");
+
+        assert memoryHandler.getSymbolTableCount() == 1;
+
+        Symbol main = memoryHandler.getFunctionByName("main");
+
+        if (main == null || !main.isVoidFunc() || main.getArgCount() != 0) {
+            System.err.println("main function not found!!!");
+            return;
+        }
+
+        int jp_to_main = Integer.parseInt(semanticStack.pop());
+        programBlock.remove(jp_to_main);
+        programBlock.add(jp_to_main, "(JP, " + main.getAddress() + ",,)");
 
         for (int i = 0; i < programBlock.size(); i++) {
             String s = programBlock.get(i);
@@ -286,6 +288,11 @@ public class SemanticAnalyzer {
             memoryHandler.addFunc(functionName, symbol);
         } catch (SymbolNameTakenException e) {
             System.err.println("Function name already taken");
+        }
+
+        if (!functionName.equals("main")) {
+            programBlock.add(i, "(JP, @" + symbol.getReturnAddress() + ",,)");
+            i = i + 1;
         }
     }
 
@@ -495,7 +502,7 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(JP, @" + returnAddress + ",,)");
         i = i + 1;
 
-        semanticStack.push("" + returnValueAddress);
+//        semanticStack.push("" + returnValueAddress);
     }
 
     void apply_break_address() {
@@ -565,7 +572,8 @@ public class SemanticAnalyzer {
 
     void update_addr() {
         System.out.println("Semantic routine called: update_addr]");
-        // TODO
+        System.err.println("This will never get called ever....");
+        System.exit(1);
     }
 
     void calc() {
@@ -616,45 +624,101 @@ public class SemanticAnalyzer {
     void get_arr_element() {
         System.out.println("Semantic routine called: get_arr_element");
         int t = memoryHandler.getTemp();
-        programBlock.add(i, "(ADD," + ss(1) + "," + ss(0) + "," + t + ")");
+        programBlock.add(i, "(MULT, " + ss(0) + ", #4, " + t + ")");
+        i = i + 1;
+
+        int t2 = memoryHandler.getTemp();
+        programBlock.add(i, "(ADD," + ss(1) + "," + t + "," + t2 + ")");
         i++;
+
+        int t3 = memoryHandler.getTemp();
+        programBlock.add(i, "(ASSIGN, @" + t2 + ", " + t3 + ",)");
+        i = i + 1;
+
         pop(2);
-        semanticStack.push("" + t);
+        semanticStack.push("" + t3);
     }
 
     void start_set_param() {
         System.out.println("Semantic routine called: start_set_param");
         // TODO: 6/28/19 Fix following line for void functions
-        semanticStack.push("2");
+        semanticStack.push("0");
     }
 
     void end_set_param() {
         System.out.println("Semantic routine called: end_set_param");
-        pop(1);
+
+        int argumentNumbers = Integer.parseInt(semanticStack.pop());
+        int functionStartAddress = Integer.parseInt(semanticStack.peek());
+        try {
+            Symbol function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
+            if (argumentNumbers != function.getArgCount()) {
+                // TODO Fix this to function name as well
+                System.err.println("Mismatch in number of arguments of " + function.getAddress());
+            }
+        } catch (FunctionNotFoundException e) {
+            System.err.println("Your function does not exist. ....");
+        }
+
+
     }
 
     void call() {
         System.out.println("Semantic routine called: call");
-        programBlock.add(i, "(ASSIGN," + (i + 2) + "," + ss(0) + ",)");
-        i++;
-        // TODO: 6/28/19 Implement getFunctionAddressByName to find address location in program block
+
+        int startAddress = Integer.parseInt(semanticStack.pop());
+        try {
+            Symbol function = memoryHandler.getFunctionByStartAddress(startAddress);
+            int funcReturnAddress = function.getReturnAddress();
+            programBlock.add(i, "(ASSIGN, #" + (i + 2) + ", " + funcReturnAddress + ",)");
+            i = i + 1;
+
+            programBlock.add(i, "(JP, " + startAddress + ",,)");
+            i = i + 1;
+
+            if (function.isIntFunc()) {
+                semanticStack.push("" + function.getReturnValueAddress());
+            }
+
+        } catch (FunctionNotFoundException e) {
+            System.err.println("YOu can never reach me :)))))))))))))");
+        }
+
+
+//         TODO: 6/28/19 Implement getFunctionAddressByName to find address location in program block
 //        programBlock.add(i, "(JP," + memoryHandler.getFunctionAddressByName(ss(1)));
-        i++;
+//        i++;
     }
 
     void set_param() {
         System.out.println("Semantic routine called: set_param");
-        int paramAddress = Integer.parseInt(ss(1)) + Integer.parseInt(ss(2));
-        programBlock.add(i, "(ASSIGN," + ss(0) + "," + paramAddress + ",)");
-        i++;
-        semanticStack.add(semanticStack.size() - 2, "" + Integer.parseInt(ss(1)) + 1);
-        pop(1);
+        int functionStartAddress = Integer.parseInt(ss(2));
+        int argumentNumber = Integer.parseInt(ss(1));
+
+        Symbol function = null;
+        try {
+            function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
+            int paramAddress = function.getArgAddress(argumentNumber);
+
+            programBlock.add(i, "(ASSIGN," + ss(0) + "," + paramAddress + ",)");
+            i++;
+            pop(2);
+
+            semanticStack.add("" + (argumentNumber + 1));
+        } catch (FunctionNotFoundException e) {
+            System.err.println("Function used cannot be found!!!!");
+        } catch (TooMuchArgumentsException e) {
+            // TODO Fix this and replace it with function name
+            System.err.println("Mismatch in number of arguments of " + function.getAddress());
+        }
     }
 
     void assign() {
         System.out.println("Semantic routine called: assign");
+        int destination = Integer.parseInt(ss(1));
         programBlock.add(i, "(ASSIGN," + ss(0) + "," + ss(1) + ",)");
         pop(2);
+        semanticStack.push("" + destination);
         i++;
     }
 

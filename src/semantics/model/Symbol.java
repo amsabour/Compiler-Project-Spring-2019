@@ -1,6 +1,7 @@
 package semantics.model;
 
 import semantics.exceptions.ArgumentWithoutFunction;
+import semantics.exceptions.TooMuchArgumentsException;
 
 import java.util.ArrayList;
 
@@ -52,7 +53,7 @@ public class Symbol {
         return type;
     }
 
-    int getAddress() {
+    public int getAddress() {
         return address;
     }
 
@@ -93,6 +94,18 @@ public class Symbol {
             throw new RuntimeException("Cannot get return value address of non function or non int function symbol");
 
         return returnValueAddress;
+    }
+
+    public int getArgAddress(int index) throws TooMuchArgumentsException {
+        if (index < argAddresses.size())
+            return argAddresses.get(index);
+        throw new TooMuchArgumentsException();
+    }
+
+    public int getArgCount() {
+        assert isFunction();
+        assert argAddresses.size() == argTypes.size();
+        return argAddresses.size();
     }
 }
 

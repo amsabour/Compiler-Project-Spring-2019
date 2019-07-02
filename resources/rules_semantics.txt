@@ -1,4 +1,4 @@
-Program -> Declaration-list #has_main eof
+Program -> #save Declaration-list #has_main eof
 Declaration-list -> Declaration Declaration-list
 Declaration-list -> eps
 Declaration -> #push Type-specifier #push id Declaration-2
@@ -26,7 +26,7 @@ Statement -> Selection-stmt
 Statement -> Iteration-stmt
 Statement -> Return-stmt
 Statement -> Switch-stmt
-Expression-stmt -> Expression ;
+Expression-stmt -> Expression #pop ;
 Expression-stmt -> continue #continuez ;
 Expression-stmt -> break #breakz ;
 Expression-stmt -> ;
