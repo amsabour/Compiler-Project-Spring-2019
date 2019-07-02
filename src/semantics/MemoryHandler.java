@@ -72,6 +72,19 @@ class MemoryHandler {
         symbolTables.add(new SymbolTable());
     }
 
+    void startBreakableScope(int breakAddress) {
+        symbolTables.add(new SymbolTable(breakAddress));
+    }
+
+    boolean isInBreakableScope() {
+        return symbolTables.peek().isBreakable();
+    }
+
+    int getScopeBreakAddress(){
+        assert isInBreakableScope();
+        return symbolTables.peek().getBreakAddress();
+    }
+
     void endNewScope() {
         symbolTables.pop();
     }

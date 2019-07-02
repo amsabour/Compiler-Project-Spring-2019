@@ -92,8 +92,8 @@ public class SemanticAnalyzer {
             case "start_scope_breakable":
                 start_scope_breakable();
                 break;
-            case "end_scope":
-                end_scope();
+            case "end_scope_breakable":
+                end_scope_breakable();
                 break;
             case "pop":
                 pop();
@@ -163,7 +163,10 @@ public class SemanticAnalyzer {
         // TODO
         System.out.println("Semantic routine called: has_main");
 
-        System.out.println(programBlock);
+        for (int i = 0; i < programBlock.size(); i++) {
+            String s = programBlock.get(i);
+            System.out.println("" + i + ": " + s);
+        }
     }
 
     void push(String input) {
@@ -380,7 +383,17 @@ public class SemanticAnalyzer {
 
     void breakz() {
         System.out.println("Semantic routine called: break");
-        // TODO
+
+        // TODO Breaks dont work in while loops yet
+
+        if (!memoryHandler.isInBreakableScope()) {
+            // TODO: 6/28/19 Error
+            System.err.println("break not inside of breakable scope");
+        } else {
+            int breakAddress = memoryHandler.getScopeBreakAddress();
+            programBlock.add(i, "(JP, " + breakAddress + ",,)");
+            i = i + 1;
+        }
     }
 
     void save() {
@@ -493,13 +506,22 @@ public class SemanticAnalyzer {
     }
 
     void start_scope_breakable() {
-        // TODO
         System.out.println("Semantic routine called: start_scope_breakable");
+
+        int breakAddress = Integer.parseInt(ss(1));
+        memoryHandler.startBreakableScope(breakAddress);
     }
 
-    void end_scope() {
-        // TODO
-        System.out.println("Semantic routine called: end_scope");
+    void end_scope_breakable() {
+        // This is only for switch
+        System.out.println("Semantic routine called: end_scope_breakable");
+        int jp_line = Integer.parseInt(ss(0));
+        pop(1);
+
+        programBlock.remove(jp_line);
+        programBlock.add(jp_line, "(JP, " + i + ", , )");
+
+        memoryHandler.endNewScope();
     }
 
     void pop() {
@@ -509,14 +531,32 @@ public class SemanticAnalyzer {
 
     void cmp() {
         System.out.println("Semantic routine called: cmp");
+
+        String case_value = ss(0);
+        String switch_expr = ss(1);
+        pop(1);
+
+        int t = memoryHandler.getTemp();
+        programBlock.add(i, "(EQ, " + switch_expr + ", " + case_value + ", " + t + ")");
+        i = i + 1;
+
+        semanticStack.push("" + t);
     }
 
     void jpf() {
         System.out.println("Semantic routine called: jpf");
+
+        int jpf_line = Integer.parseInt(ss(0));
+        String eq = ss(1);
+        pop(2);
+
+        programBlock.remove(jpf_line);
+        programBlock.add(jpf_line, "(JPF, " + eq + "," + i + ",)");
     }
 
     void update_addr() {
         System.out.println("Semantic routine called: update_addr]");
+        // TODO
     }
 
     void calc() {

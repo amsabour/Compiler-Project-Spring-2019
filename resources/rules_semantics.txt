@@ -35,7 +35,7 @@ Iteration-stmt -> while #label ( Expression ) #save Statement #whilez
 Return-stmt -> return Return-stmt-2
 Return-stmt-2 -> #return_void ;
 Return-stmt-2 -> Expression #return_expr ;
-Switch-stmt -> switch #switchz ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #end_scope #pop
+Switch-stmt -> switch #switchz ( Expression ) #start_scope_breakable { Case-stmts Default-stmt } #pop #end_scope_breakable
 Case-stmts -> Case-stmt Case-stmts
 Case-stmts -> eps
 Case-stmt -> case #push_num #cmp num #save : Statement-list #jpf

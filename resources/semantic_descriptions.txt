@@ -23,7 +23,7 @@ TODO (Shouldn't these have a fixed address???)
 
 #start_scope: add new symbol table to stack
 #start_scope_breakable: add new symbol table to stack which has the flag breakable active
-#end_scope: pop symbol table from stack
+#end_scope_breakable: pop symbol table from stack and fill in jp line in break address which is ss(top)
 
 #save: push(i), i = i+1
 #jpf_save: stack(top) = location for if statement jpf. Fill this.pop(1),  push(i), i = i+1 (This new one is for unconditional jump)
@@ -42,7 +42,7 @@ TODO (Shouldn't these have a fixed address???)
 
 
 #cmp: stack(top) = case_val, stack(top-1) = switch_expr. compare these two and assign its value to temp. pop(1), push(temp)
-#jpf: PB[stack(top)] = (jpf, stack(top-1), i)
+#jpf: PB[stack(top)] = (jpf, stack(top-1), i), pop(2)
 
 #update_addr: stack(top-1) = array_pointer, stack(top) = element_number, pop(2) push(array_pointer + 4 * element_number)
 

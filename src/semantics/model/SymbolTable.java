@@ -8,6 +8,19 @@ public class SymbolTable {
     private HashMap<String, Symbol> table = new HashMap<>();
     private String functionName = null;
 
+    private boolean breakable = false;
+    private int breakAddress = -1;
+
+    public SymbolTable() {
+
+    }
+
+    public SymbolTable(int breakAddress) {
+        this.breakable = true;
+        this.breakAddress = breakAddress;
+    }
+
+
     public void addSymbol(String name, SymbolType type, int address) throws SymbolNameTakenException {
         if (table.containsKey(name))
             throw new SymbolNameTakenException(name);
@@ -59,6 +72,14 @@ public class SymbolTable {
 
     public String getFunction() {
         return this.functionName;
+    }
+
+    public boolean isBreakable() {
+        return breakable;
+    }
+
+    public int getBreakAddress() {
+        return breakAddress;
     }
 
 }
