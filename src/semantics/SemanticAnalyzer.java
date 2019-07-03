@@ -510,7 +510,7 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(JP, @" + returnAddress + ",,)");
         i = i + 1;
 
-        if(expression.equals("void")){
+        if (expression.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
         }
 
@@ -658,16 +658,16 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(ADD," + ss(1) + "," + t + "," + t2 + ")");
         i++;
 
-        int t3 = memoryHandler.getTemp();
-        programBlock.add(i, "(ASSIGN, @" + t2 + ", " + t3 + ",)");
-        i = i + 1;
+//        int t3 = memoryHandler.getTemp();
+//        programBlock.add(i, "(ASSIGN, @" + t2 + ", " + t3 + ",)");
+//        i = i + 1;
 
         if (operand1.equals("void") || operand2.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
         }
 
         pop(2);
-        semanticStack.push("" + t3);
+        semanticStack.push("@" + t2);
     }
 
     void start_set_param() {
@@ -775,14 +775,14 @@ public class SemanticAnalyzer {
 
     void assign() {
         System.out.println("Semantic routine called: assign");
-        int destination = Integer.parseInt(ss(1));
+        String destination = ss(1);
         String expression = ss(0);
         programBlock.add(i, "(ASSIGN," + ss(0) + "," + ss(1) + ",)");
         pop(2);
         semanticStack.push("" + destination);
         i++;
 
-        if(expression.equals("void")){
+        if (expression.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
         }
     }

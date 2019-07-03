@@ -1,4 +1,4 @@
 package semantics.exceptions;
 
-public class SemanticKillException {
+public class SemanticKillException extends Exception{
 }
