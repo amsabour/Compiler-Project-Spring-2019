@@ -510,6 +510,10 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(JP, @" + returnAddress + ",,)");
         i = i + 1;
 
+        if(expression.equals("void")){
+            OutputHandler.getInstance().printTypeMismatchError();
+        }
+
 //        semanticStack.push("" + returnValueAddress);
     }
 
@@ -772,10 +776,15 @@ public class SemanticAnalyzer {
     void assign() {
         System.out.println("Semantic routine called: assign");
         int destination = Integer.parseInt(ss(1));
+        String expression = ss(0);
         programBlock.add(i, "(ASSIGN," + ss(0) + "," + ss(1) + ",)");
         pop(2);
         semanticStack.push("" + destination);
         i++;
+
+        if(expression.equals("void")){
+            OutputHandler.getInstance().printTypeMismatchError();
+        }
     }
 
 }
