@@ -73,8 +73,8 @@ Args -> eps
 Arg-list -> Expression #set_param Arg-list-2
 Arg-list-2 -> , Arg-list
 Arg-list-2 -> eps
-Expression -> #push + Factor Term-2 Additive-expression-2 Simple-expression-2
-Expression -> #push - Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> + Factor Term-2 Additive-expression-2 Simple-expression-2
+Expression -> #push_minusone_mult - Factor #calc Term-2 Additive-expression-2 Simple-expression-2
 Expression -> ( Expression ) Term-2 Additive-expression-2 Simple-expression-2
 Expression -> #push_num num Term-2 Additive-expression-2 Simple-expression-2
 Expression -> #pid id Expression-2
