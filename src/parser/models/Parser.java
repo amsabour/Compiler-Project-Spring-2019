@@ -138,8 +138,11 @@ public class Parser {
     public void startParse() {
         try {
             parse("Program");
-        } catch (EOFException | SemanticKillException ignored) {
+        } catch (EOFException ignored) {
             // Encountered EOFException. Stopping parse.
+        } catch (SemanticKillException ignored) {
+            // Encountered EOFException. Stopping parse.
+            System.out.println("Semantic KILL Received. stopping parsing.");
         } finally {
             OutputHandler.getInstance().flushErrorBuffers();
         }
