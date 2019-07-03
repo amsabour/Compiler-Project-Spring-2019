@@ -110,7 +110,7 @@ public class OutputHandler implements Closeable {
 //        errorFormatter.format(lineNumber + ": Syntax Error! " + errorType + "\n");
     }
 
-    public void printMainNotFoundError(){
+    public void printMainNotFoundError() {
         addToSemanticErrorBuffer("main function not found!!");
     }
 
@@ -131,7 +131,7 @@ public class OutputHandler implements Closeable {
     }
 
     public void printIllegalTypeError(String id) {
-        addToSemanticErrorBuffer("Illegal type of void");
+        addToSemanticErrorBuffer("Illegal type of void for '" + id + "'");
     }
 
     public void printScopingError(String id) {

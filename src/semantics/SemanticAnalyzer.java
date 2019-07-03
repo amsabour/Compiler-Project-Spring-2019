@@ -19,123 +19,127 @@ public class SemanticAnalyzer {
     // Program counter
     private int i = 0;
 
-    public void callRoutine(String name, String input) {
+    public void callRoutine(String name, String input) throws SemanticKillException {
 
-        switch (name) {
-            case "push":
-                push(input);
-                break;
-            case "push_num":
-                push_num(input);
-                break;
-            case "pid":
-                pid(input);
-                break;
-            case "has_main":
-                has_main();
-                break;
-            case "var_dec":
-                var_dec();
-                break;
-            case "arr_dec":
-                arr_dec();
-                break;
-            case "func_dec_begin":
-                func_dec_begin();
-                break;
-            case "func_dec_end":
-                func_dec_end();
-                break;
-            case "add_func_to_symbol_table":
-                add_func_to_symbol_table();
-                break;
-            case "var_param":
-                var_param();
-                break;
-            case "arr_param":
-                arr_param();
-                break;
-            case "begin":
-                begin();
-                break;
-            case "end":
-                end();
-                break;
-            case "continuez":
-                continuez();
-                break;
-            case "breakz":
-                breakz();
-                break;
-            case "save":
-                save();
-                break;
-            case "jpf_save":
-                jpf_save();
-                break;
-            case "jp":
-                jp();
-                break;
-            case "label":
-                label();
-                break;
-            case "whilez":
-                whilez();
-                break;
-            case "return_void":
-                return_void();
-                break;
-            case "return_expr":
-                return_expr();
-                break;
-            case "apply_break_address":
-                apply_break_address();
-                break;
-            case "start_scope_breakable":
-                start_scope_breakable();
-                break;
-            case "start_scope_breakable_2":
-                start_scope_breakable_2();
-                break;
-            case "end_scope_breakable":
-                end_scope_breakable();
-                break;
-            case "pop":
-                pop();
-                break;
-            case "cmp":
-                cmp();
-                break;
-            case "jpf":
-                jpf();
-                break;
-            case "update_addr":
-                update_addr();
-                break;
-            case "calc":
-                calc();
-                break;
-            case "push_minusone_mult":
-                push_minusone_mult();
-                break;
-            case "get_arr_element":
-                get_arr_element();
-                break;
-            case "start_set_param":
-                start_set_param();
-                break;
-            case "end_set_param":
-                end_set_param();
-                break;
-            case "call":
-                call();
-                break;
-            case "set_param":
-                set_param();
-                break;
-            case "assign":
-                assign();
-                break;
+        try {
+            switch (name) {
+                case "push":
+                    push(input);
+                    break;
+                case "push_num":
+                    push_num(input);
+                    break;
+                case "pid":
+                    pid(input);
+                    break;
+                case "has_main":
+                    has_main();
+                    break;
+                case "var_dec":
+                    var_dec();
+                    break;
+                case "arr_dec":
+                    arr_dec();
+                    break;
+                case "func_dec_begin":
+                    func_dec_begin();
+                    break;
+                case "func_dec_end":
+                    func_dec_end();
+                    break;
+                case "add_func_to_symbol_table":
+                    add_func_to_symbol_table();
+                    break;
+                case "var_param":
+                    var_param();
+                    break;
+                case "arr_param":
+                    arr_param();
+                    break;
+                case "begin":
+                    begin();
+                    break;
+                case "end":
+                    end();
+                    break;
+                case "continuez":
+                    continuez();
+                    break;
+                case "breakz":
+                    breakz();
+                    break;
+                case "save":
+                    save();
+                    break;
+                case "jpf_save":
+                    jpf_save();
+                    break;
+                case "jp":
+                    jp();
+                    break;
+                case "label":
+                    label();
+                    break;
+                case "whilez":
+                    whilez();
+                    break;
+                case "return_void":
+                    return_void();
+                    break;
+                case "return_expr":
+                    return_expr();
+                    break;
+                case "apply_break_address":
+                    apply_break_address();
+                    break;
+                case "start_scope_breakable":
+                    start_scope_breakable();
+                    break;
+                case "start_scope_breakable_2":
+                    start_scope_breakable_2();
+                    break;
+                case "end_scope_breakable":
+                    end_scope_breakable();
+                    break;
+                case "pop":
+                    pop();
+                    break;
+                case "cmp":
+                    cmp();
+                    break;
+                case "jpf":
+                    jpf();
+                    break;
+                case "update_addr":
+                    update_addr();
+                    break;
+                case "calc":
+                    calc();
+                    break;
+                case "push_minusone_mult":
+                    push_minusone_mult();
+                    break;
+                case "get_arr_element":
+                    get_arr_element();
+                    break;
+                case "start_set_param":
+                    start_set_param();
+                    break;
+                case "end_set_param":
+                    end_set_param();
+                    break;
+                case "call":
+                    call();
+                    break;
+                case "set_param":
+                    set_param();
+                    break;
+                case "assign":
+                    assign();
+                    break;
+            }
+        } catch (Exception e) {
+            throw new SemanticKillException();
         }
     }
 
@@ -155,17 +159,23 @@ public class SemanticAnalyzer {
     // TODO Handle this somehow....
     // the following methods are semantic routines
 
-    void has_main() {
+    void has_main() throws SemanticKillException {
         System.out.println("Semantic routine called: has_main");
 
         assert memoryHandler.getSymbolTableCount() == 1;
 
-        Symbol main = memoryHandler.getFunctionByName("main");
-
-        if (main == null || !main.isVoidFunc() || main.getArgCount() != 0) {
+        Symbol main;
+        try {
+            main = memoryHandler.getFunctionByName("main");
+            if (main == null || !main.isVoidFunc() || main.getArgCount() != 0) {
+                OutputHandler.getInstance().printMainNotFoundError();
+                throw new SemanticKillException();
+            }
+        } catch (SymbolNotFoundException e) {
             OutputHandler.getInstance().printMainNotFoundError();
-            return;
+            throw new SemanticKillException();
         }
+
 
         int jp_to_main = Integer.parseInt(semanticStack.pop());
         programBlock.remove(jp_to_main);
@@ -186,14 +196,13 @@ public class SemanticAnalyzer {
         semanticStack.push("#" + input);
     }
 
-    void var_dec() {
+    void var_dec() throws SemanticKillException {
         String name = ss(0);
         String type = ss(1);
         pop(2);
         if (type.equals("void")) {
-            // TODO: 6/21/19 Error
             OutputHandler.getInstance().printIllegalTypeError(name);
-//            System.err.println("Var type is void");
+            throw new SemanticKillException();
         }
         try {
             memoryHandler.allocateVar(name);
@@ -204,18 +213,17 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: var_dec");
     }
 
-    void arr_dec() {
+    void arr_dec() throws SemanticKillException {
         int size = Integer.parseInt(semanticStack.pop().substring(1));
         String name = semanticStack.pop();
         String type = semanticStack.pop();
         if (type.equals("void")) {
-            // TODO: 6/21/19 Error
             OutputHandler.getInstance().printIllegalTypeError(name);
-//            System.err.println("Array type is void");
+            throw new SemanticKillException();
         }
         try {
             memoryHandler.allocateArray(name, size);
-            int pointerAddress = memoryHandler.findAddress(name);
+            int pointerAddress = Integer.parseInt(memoryHandler.findAddress(name));
             programBlock.add(i, "(" + "ASSIGN," + "#" + (pointerAddress + MemoryHandler.VAR_SIZE) + "," + pointerAddress + ",)");
             i += 1;
         } catch (SymbolNameTakenException e) {
@@ -387,12 +395,12 @@ public class SemanticAnalyzer {
         System.out.println("Semantic routine called: end");
     }
 
-    void continuez() {
+    void continuez() throws SemanticKillException {
         System.out.println("Semantic routine called: continue");
 
         if (!memoryHandler.isInContinuableScope()) {
-            // TODO: 6/28/19 Error
             OutputHandler.getInstance().printContinueError();
+            throw new SemanticKillException();
         } else {
             int continueAddress = memoryHandler.getScopeContinueAddress();
             programBlock.add(i, "(JP, " + continueAddress + ",,)");
@@ -400,13 +408,13 @@ public class SemanticAnalyzer {
         }
     }
 
-    void breakz() {
+    void breakz() throws SemanticKillException {
         System.out.println("Semantic routine called: break");
 
 
         if (!memoryHandler.isInBreakableScope()) {
-            // TODO: 6/28/19 Error
             OutputHandler.getInstance().printBreakError();
+            throw new SemanticKillException();
         } else {
             int breakAddress = memoryHandler.getScopeBreakAddress();
             programBlock.add(i, "(JP, " + breakAddress + ",,)");
@@ -485,7 +493,7 @@ public class SemanticAnalyzer {
 
     }
 
-    void return_expr() {
+    void return_expr() throws SemanticKillException {
         System.out.println("Semantic routine called: return_expr");
 
         Symbol function = memoryHandler.getCurrentFunction();
@@ -512,6 +520,7 @@ public class SemanticAnalyzer {
 
         if (expression.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
+            throw new SemanticKillException();
         }
 
 //        semanticStack.push("" + returnValueAddress);
@@ -589,7 +598,7 @@ public class SemanticAnalyzer {
         System.exit(1);
     }
 
-    void calc() {
+    void calc() throws SemanticKillException {
         System.out.println("Semantic routine called: calc");
         String second = semanticStack.pop();
         String op = semanticStack.pop();
@@ -615,6 +624,7 @@ public class SemanticAnalyzer {
 
         if (first.equals("void") || second.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
+            throw new SemanticKillException();
         }
 
         int t = memoryHandler.getTemp();
@@ -629,7 +639,7 @@ public class SemanticAnalyzer {
         semanticStack.push("*");
     }
 
-    void pid(String input) {
+    void pid(String input) throws SemanticKillException {
         System.out.println("Semantic routine called: pid");
         try {
             if (!input.equals("output")) {
@@ -639,12 +649,13 @@ public class SemanticAnalyzer {
             }
         } catch (SymbolNotFoundException e) {
             OutputHandler.getInstance().printScopingError(input);
+            throw new SemanticKillException();
 //            System.err.println("Symbol Not found");
         }
     }
 
 
-    void get_arr_element() {
+    void get_arr_element() throws SemanticKillException {
         //TODO HERE
         System.out.println("Semantic routine called: get_arr_element");
         int t = memoryHandler.getTemp();
@@ -658,12 +669,9 @@ public class SemanticAnalyzer {
         programBlock.add(i, "(ADD," + ss(1) + "," + t + "," + t2 + ")");
         i++;
 
-//        int t3 = memoryHandler.getTemp();
-//        programBlock.add(i, "(ASSIGN, @" + t2 + ", " + t3 + ",)");
-//        i = i + 1;
-
         if (operand1.equals("void") || operand2.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
+            throw new SemanticKillException();
         }
 
         pop(2);
@@ -676,7 +684,7 @@ public class SemanticAnalyzer {
         semanticStack.push("0");
     }
 
-    void end_set_param() {
+    void end_set_param() throws SemanticKillException {
         System.out.println("Semantic routine called: end_set_param");
 
         if (ss(1).equals("output")) {
@@ -688,27 +696,26 @@ public class SemanticAnalyzer {
         }
 
         int argumentNumbers = Integer.parseInt(semanticStack.pop());
-        int functionStartAddress = Integer.parseInt(semanticStack.peek());
+        String functionName = semanticStack.peek();
 
-        String functionName = null;
         try {
-            functionName = memoryHandler.getFunctionNameByStartAddress(functionStartAddress);
-            Symbol function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
+            Symbol function = memoryHandler.getFunctionByName(functionName);
 
             if (argumentNumbers != function.getArgCount()) {
                 OutputHandler.getInstance().printArgMismatchError(functionName);
+                throw new SemanticKillException();
             }
-        } catch (FunctionNotFoundException e) {
+        } catch (SymbolNotFoundException e) {
 //            System.err.println("Your function does not exist. ....");
             // TODO TEST THIS. Using an undefined func
             OutputHandler.getInstance().printScopingError(functionName);
-
+            throw new SemanticKillException();
         }
 
 
     }
 
-    void call() {
+    void call() throws SemanticKillException {
         System.out.println("Semantic routine called: call");
 
         if (semanticStack.peek().equals("output")) {
@@ -720,9 +727,10 @@ public class SemanticAnalyzer {
             return;
         }
 
-        int startAddress = Integer.parseInt(semanticStack.pop());
+        String functionName = semanticStack.pop();
         try {
-            Symbol function = memoryHandler.getFunctionByStartAddress(startAddress);
+            Symbol function = memoryHandler.getFunctionByName(functionName);
+            int startAddress = function.getAddress();
             int funcReturnAddress = function.getReturnAddress();
             programBlock.add(i, "(ASSIGN, #" + (i + 2) + ", " + funcReturnAddress + ",)");
             i = i + 1;
@@ -736,12 +744,13 @@ public class SemanticAnalyzer {
                 semanticStack.push("void");
             }
 
-        } catch (FunctionNotFoundException e) {
-            System.err.println("YOu can never reach me :)))))))))))))");
+        } catch (SymbolNotFoundException e) {
+            OutputHandler.getInstance().printScopingError(functionName);
+            throw new SemanticKillException();
         }
     }
 
-    void set_param() {
+    void set_param() throws SemanticKillException {
         System.out.println("Semantic routine called: set_param");
 
         if (ss(2).equals("output")) {
@@ -749,14 +758,12 @@ public class SemanticAnalyzer {
             return;
         }
 
-        int functionStartAddress = Integer.parseInt(ss(2));
+        String functionName = ss(2);
         int argumentNumber = Integer.parseInt(ss(1));
 
         Symbol function = null;
-        String functionName = null;
         try {
-            function = memoryHandler.getFunctionByStartAddress(functionStartAddress);
-            functionName = memoryHandler.getFunctionNameByStartAddress(functionStartAddress);
+            function = memoryHandler.getFunctionByName(functionName);
             int paramAddress = function.getArgAddress(argumentNumber);
 
 
@@ -765,15 +772,16 @@ public class SemanticAnalyzer {
             pop(2);
 
             semanticStack.add("" + (argumentNumber + 1));
-        } catch (FunctionNotFoundException e) {
+        } catch (SymbolNotFoundException e) {
             System.err.println("Function used cannot be found!!!!");
         } catch (TooMuchArgumentsException e) {
             OutputHandler.getInstance().printArgMismatchError(functionName);
             pop(1);
+            throw new SemanticKillException();
         }
     }
 
-    void assign() {
+    void assign() throws SemanticKillException {
         System.out.println("Semantic routine called: assign");
         String destination = ss(1);
         String expression = ss(0);
@@ -784,6 +792,7 @@ public class SemanticAnalyzer {
 
         if (expression.equals("void")) {
             OutputHandler.getInstance().printTypeMismatchError();
+            throw new SemanticKillException();
         }
     }
 

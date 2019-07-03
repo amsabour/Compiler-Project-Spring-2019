@@ -126,34 +126,19 @@ class MemoryHandler {
         symbolTables.pop();
     }
 
-    int findAddress(String name) throws SymbolNotFoundException {
+    String findAddress(String name) throws SymbolNotFoundException {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            Integer address = symbolTables.get(i).getAddress(name);
-            if (address != null) {
-                return address;
+            Symbol symbol = symbolTables.get(i).getSymbol(name);
+            if (symbol != null) {
+                if (symbol.isFunction()) {
+                    return name;
+                } else {
+                    int address = symbol.getAddress();
+                    return "" + address;
+                }
             }
         }
         throw new SymbolNotFoundException(name);
-    }
-
-    Symbol getFunctionByStartAddress(int startAddress) throws FunctionNotFoundException {
-        for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            Symbol function = symbolTables.get(i).getFunctionByAddress(startAddress);
-            if (function != null) {
-                return function;
-            }
-        }
-        throw new FunctionNotFoundException(startAddress);
-    }
-
-    String getFunctionNameByStartAddress(int startAddress) throws FunctionNotFoundException {
-        for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            String function = symbolTables.get(i).getFunctionNameByAddress(startAddress);
-            if (function != null) {
-                return function;
-            }
-        }
-        throw new FunctionNotFoundException(startAddress);
     }
 
 
@@ -173,14 +158,14 @@ class MemoryHandler {
         return current.getSymbol(function);
     }
 
-    Symbol getFunctionByName(String name) {
+    Symbol getFunctionByName(String name) throws SymbolNotFoundException {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
             Symbol symbol = symbolTables.get(i).getSymbol(name);
             if (symbol != null) {
                 return symbol;
             }
         }
-        return null;
+        throw new SymbolNotFoundException(name);
     }
 
     int getSymbolTableCount() {

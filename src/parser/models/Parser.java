@@ -6,6 +6,7 @@ import lexanalyzer.enums.TokenType;
 import lexanalyzer.models.Token;
 import parser.exceptions.EOFException;
 import semantics.SemanticAnalyzer;
+import semantics.exceptions.SemanticKillException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -137,14 +138,14 @@ public class Parser {
     public void startParse() {
         try {
             parse("Program");
-        } catch (EOFException ignored) {
+        } catch (EOFException | SemanticKillException ignored) {
             // Encountered EOFException. Stopping parse.
         } finally {
             OutputHandler.getInstance().flushErrorBuffers();
         }
     }
 
-    private void parse(String state) throws EOFException {
+    private void parse(String state) throws EOFException, SemanticKillException {
         onStateEnter(state);
 
         if (state.equals("eps")) {
@@ -192,7 +193,7 @@ public class Parser {
         }
     }
 
-    private void parseNonTerminal(String state) throws EOFException {
+    private void parseNonTerminal(String state) throws EOFException, SemanticKillException {
         Rule goalRule = null;
         for (Rule rule : rules.get(state)) {
             if (isRuleValid(state, rule)) {
